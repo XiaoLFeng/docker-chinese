@@ -117,6 +117,12 @@
                     'user menu': '用户菜单',
                     'collapse sidebar': '收起侧边栏',
                     'open context switcher': '打开上下文切换器',
+                    'Docker Suite': 'Docker 套件',
+                    'Create organization': '创建组织',
+                    'Your account': '你的账户',
+                    'Organizations': '组织',
+                    'Contact support': '联系支持',
+                    'System status': '系统状态',
 
                     // ========== 用户相关 ==========
                     'Settings': '设置',
@@ -392,6 +398,9 @@
                     [/less than 1 day/, '不到 1 天'],
                     [/created (\d+) (\w+) ago/, '创建于 $1 $2 前'],
                     [/updated (\d+) (\w+) ago/, '更新于 $1 $2 前'],
+                    [/about (\d+) hours? ago/, '约 $1 小时前'],
+                    [/^(\d+)[–-](\d+) of (\d+)$/, '第 $1–$2 条，共 $3 条'],
+                    [/^Notification center: (\d+) notifications$/, '通知中心：$1 条通知'],
 
                     // Docker 特定术语正则
                     [/(\d+)\s*(MB|GB|KB|B)/i, '$1 $2'],
@@ -413,13 +422,19 @@
                 ],
 
                 selector: [
-                    // Docker Hub
+                    // Docker Hub - 通用导航
                     ['h1', 'Docker Hub'],
                     ['input[placeholder*="Search"]', '搜索镜像和仓库'],
                     ['a[href*="/explore"]', '浏览'],
                     ['a[href*="/pricing"]', '价格'],
                     ['a[href*="/signup"]', '注册'],
                     ['a[href*="/login"]', '登录'],
+
+                    // Docker Hub - 界面按钮（根据 aria-label 选择）
+                    ['button[aria-label="open app switcher"]', '打开应用切换器'],
+                    ['button[aria-label="user menu"]', '用户菜单'],
+                    ['button[aria-label="collapse sidebar"]', '收起侧边栏'],
+                    ['button[aria-label="open context switcher"]', '打开上下文切换器'],
 
                     // Docker Hub - 官方镜像
                     ['.badge:contains("Official")', '官方'],
@@ -433,6 +448,22 @@
                     ['h2:contains("Popular")', '热门仓库'],
                     ['h2:contains("Official")', '官方镜像'],
                     ['code', ''], // 保留代码块内容
+
+                    // Docker Hub - 侧栏/抽屉/脚注兜底
+                    ['a:contains("Repositories")', '仓库'],
+                    ['a:contains("Hardened Images")', '加固镜像'],
+                    ['a:contains("Collaborations")', '协作'],
+                    ['a:contains("Settings")', '设置'],
+                    ['a:contains("Billing")', '账单'],
+                    ['a:contains("Usage")', '使用情况'],
+                    ['a:contains("Pulls")', '拉取次数'],
+                    ['a:contains("Storage")', '存储'],
+                    ['div:contains("Your account")', '你的账户'],
+                    ['div:contains("Organizations")', '组织'],
+                    ['a:contains("Create organization")', '创建组织'],
+                    ['a:contains("Contact support")', '联系支持'],
+                    ['a:contains("System status")', '系统状态'],
+                    ['button:contains("Back")', '返回'],
                 ]
             }
         },

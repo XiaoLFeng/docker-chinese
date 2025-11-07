@@ -3,7 +3,7 @@
 // @namespace    https://github.com/XiaoLFeng/docker-chinese
 // @description  中文化 Docker、Docker Hub 和 Docker Docs 网站的界面菜单及内容
 // @copyright    2025, XiaoLFeng (https://github.com/XiaoLFeng)
-// @icon         https://www.docker.com/wp-content/uploads/2022/03/Moby-logo.png
+// @icon         https://www.docker.com/favicon.ico
 // @version      1.0.0
 // @author       筱锋
 // @license      MIT
@@ -39,6 +39,8 @@
     const langPack = window.I18N[lang] || {};
     const phrasePack = window.I18N_PHRASES[lang] || {}; // 新增：长句词库
     const langConf = createLangConf(langPack);
+    const APPLIED_ATTR = 'data-docker-cn';
+    const APPLIED_SELECTOR_ATTR = 'data-docker-cn-selector';
     let page = 'docker_public';
     let enable_RegExp = GM_getValue("enable_RegExp", 1);
 
@@ -172,7 +174,7 @@
         }
 
         // 跳过已翻译的节点，避免死循环
-        if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute && node.hasAttribute('data-i18n-translated')) {
+        if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute && node.hasAttribute(APPLIED_ATTR)) {
             return;
         }
 
@@ -182,6 +184,13 @@
         const nodeItemprop = node.getAttribute ? (node.getAttribute('itemprop') || '') : '';
 
         // 跳过忽略的元素
+        // 检测本插件的标记，避免重复翻译
+        if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute) {
+            if (node.hasAttribute(APPLIED_ATTR)) {
+                return; // 跳过已被翻译的元素
+            }
+        }
+
         if ((nodeId && langConf.reIgnoreId.test(nodeId)) ||
             (nodeClass && langConf.reIgnoreClass.test(nodeClass)) ||
             (nodeTag && langConf.reIgnoreTag.includes(nodeTag)) ||
@@ -234,7 +243,7 @@
                             // 过滤已翻译的节点
                             if (node.nodeType === Node.ELEMENT_NODE &&
                                 node.hasAttribute &&
-                                node.hasAttribute('data-i18n-translated')) {
+                                node.hasAttribute(APPLIED_ATTR)) {
                                 return NodeFilter.FILTER_REJECT;
                             }
                             // 过滤忽略的标签
@@ -263,7 +272,7 @@
 
             // 所有子节点处理完后再标记节点已翻译
             if (node.setAttribute) {
-                node.setAttribute('data-i18n-translated', 'true');
+                node.setAttribute(APPLIED_ATTR, 'true');
             }
 
         } else if (node.nodeType === Node.TEXT_NODE) { // 文本节点翻译
@@ -665,7 +674,7 @@
         }
 
         // 跳过已翻译的元素
-        if (element.hasAttribute && element.hasAttribute('data-i18n-selector-translated')) {
+        if (element.hasAttribute && element.hasAttribute(APPLIED_SELECTOR_ATTR)) {
             return;
         }
 
@@ -685,7 +694,7 @@
 
         // 标记已通过选择器翻译
         if (element.setAttribute) {
-            element.setAttribute('data-i18n-selector-translated', 'true');
+            element.setAttribute(APPLIED_SELECTOR_ATTR, 'true');
         }
     }
 
