@@ -112,41 +112,55 @@
     function getPage() {
         const { hostname, pathname } = location;
 
+        // 路径规则：从长到短排序，避免短路径提前匹配
         const pageMap = {
-            'hub.docker.com': {
-                '/': 'dockerhub_home',
-                '/search': 'dockerhub_home',
-                '/repositories/': 'dockerhub_repositories',
-                '/_/': 'dockerhub_official',
-                '/tags/': 'dockerhub_tags',
-                '/layers/': 'dockerhub_layers',
-                '/repository/': 'dockerhub_repo',
-                default: 'dockerhub'
-            },
-            'docs.docker.com': {
-                '/': 'dockerdocs_home',
-                '/engine/': 'dockerdocs_engine',
-                '/compose/': 'dockerdocs_compose',
-                default: 'dockerdocs_other'
-            },
-            'www.docker.com': {
-                '/': 'docker_home',
-                '/products/': 'docker_products',
-                '/pricing/': 'docker_pricing',
-                '/resources/': 'docker_resources',
-                '/blog/': 'docker_blog',
-                default: 'docker_other'
-            }
+            'hub.docker.com': [
+                ['/repository/', 'dockerhub_repo'],      // 仓库页面（包括设置）
+                ['/repositories/', 'dockerhub_repositories'], // 仓库列表
+                ['/_/', 'dockerhub_official'],           // 官方镜像
+                ['/tags/', 'dockerhub_tags'],            // 标签页
+                ['/layers/', 'dockerhub_layers'],        // 层信息页
+                ['/search', 'dockerhub_home'],           // 搜索页
+            ],
+            'docs.docker.com': [
+                ['/engine/', 'dockerdocs_engine'],
+                ['/compose/', 'dockerdocs_compose'],
+            ],
+            'www.docker.com': [
+                ['/products/', 'docker_products'],
+                ['/pricing/', 'docker_pricing'],
+                ['/resources/', 'docker_resources'],
+                ['/blog/', 'docker_blog'],
+            ]
         };
 
-        const map = pageMap[hostname] || pageMap['www.docker.com'];
-        for (const [path, page] of Object.entries(map)) {
-            if (path === 'default') continue;
-            if (pathname === path || pathname.startsWith(path)) {
-                return page;
+        const defaultPages = {
+            'hub.docker.com': 'dockerhub',
+            'docs.docker.com': 'dockerdocs_other',
+            'www.docker.com': 'docker_other'
+        };
+
+        const rules = pageMap[hostname];
+        if (rules) {
+            // 精确匹配首页
+            if (pathname === '/') {
+                const homePages = {
+                    'hub.docker.com': 'dockerhub_home',
+                    'docs.docker.com': 'dockerdocs_home',
+                    'www.docker.com': 'docker_home'
+                };
+                return homePages[hostname] || defaultPages[hostname];
+            }
+
+            // 按规则匹配
+            for (const [path, page] of rules) {
+                if (pathname.startsWith(path)) {
+                    return page;
+                }
             }
         }
-        return map.default || 'docker_public';
+
+        return defaultPages[hostname] || 'docker_public';
     }
 
     /**
@@ -162,10 +176,16 @@
 
     /**
      * 检查是否为中文内容
+     * 策略：包含2个以上中文字符且占比超过15%，或者占比超过40%
      */
     function isChinese(text) {
         const chineseChars = text.match(/[\u4e00-\u9fa5]/g);
-        return chineseChars && (chineseChars.length / text.length) > 0.5;
+        if (!chineseChars) return false;
+
+        const ratio = chineseChars.length / text.length;
+        // 宽松策略：包含2+中文字符且占比>15%，或占比>40%
+        // 这样可以识别 "搜索 Docker Hub"（2个中文，14.3%占比）等混合文本
+        return (chineseChars.length >= 2 && ratio > 0.12) || ratio > 0.4;
     }
 
     /**
@@ -203,16 +223,17 @@
             // 1. 精确匹配
             if (pack.exact?.[key]) return pack.exact[key];
 
-            // 2. 片段匹配（30+ 字符或 5+ 单词）
-            if (key.length > 30 || key.split(/\s+/).length > 5) {
-                if (pack.fragments) {
-                    for (const [fragment, translation] of Object.entries(pack.fragments)) {
-                        if (key.includes(fragment)) {
-                            return key.replace(fragment, translation);
-                        }
-                    }
-                }
-            }
+            // 2. 片段匹配（暂时禁用，避免中英文混合问题）
+            // TODO: 需要改进逻辑，支持全局替换所有片段
+            // if (key.length > 30 || key.split(/\s+/).length > 5) {
+            //     if (pack.fragments) {
+            //         for (const [fragment, translation] of Object.entries(pack.fragments)) {
+            //             if (key.includes(fragment)) {
+            //                 return key.replace(fragment, translation);
+            //             }
+            //         }
+            //     }
+            // }
 
             // 3. 正则匹配
             if (enable_RegExp && Array.isArray(pack.regexp)) {
@@ -248,11 +269,17 @@
         // 缓存结果
         translationCache.set(key, result);
 
+        // 调试：记录翻译失败的文本（排除纯数字、纯符号等无意义内容）
+        if (!result && key.length >= 3 && key.length <= 100 && /[a-zA-Z]{3,}/.test(key)) {
+            console.debug(`[Docker 中文化] 未翻译: "${key}" (页面: ${currentPage}, 回退链: ${fallbackChain.join(' > ')})`);
+        }
+
         return result && result !== key ? text.replace(text.trim(), result) : false;
     }
 
     /**
      * 翻译元素
+     * @returns {boolean} 是否成功翻译
      */
     function transElement(el, field, isAttr = false) {
         const text = isAttr ? el.getAttribute(field) : el[field];
@@ -260,7 +287,9 @@
 
         if (translated) {
             isAttr ? el.setAttribute(field, translated) : (el[field] = translated);
+            return true; // 翻译成功
         }
+        return false; // 翻译失败或无需翻译
     }
 
     /**
@@ -290,8 +319,11 @@
 
     /**
      * 翻译元素属性
+     * @returns {boolean} 是否有任何属性被成功翻译
      */
     function transElementAttrs(node) {
+        let hasTranslated = false;
+
         const attrMap = {
             INPUT: { button: ['data-confirm', 'value'], submit: ['data-confirm', 'value'], reset: ['data-confirm', 'value'], default: ['placeholder'] },
             TEXTAREA: { default: ['placeholder'] },
@@ -306,25 +338,38 @@
         if (attrs) {
             attrs.forEach(attr => {
                 if (node.hasAttribute(attr)) {
-                    transElement(node, attr, true);
+                    if (transElement(node, attr, true)) {
+                        hasTranslated = true;
+                    }
                 }
             });
         } else if (node.getAttribute?.('aria-label')) {
-            transElement(node, 'aria-label', true);
+            if (transElement(node, 'aria-label', true)) {
+                hasTranslated = true;
+            }
         } else if (node.hasAttribute?.('title')) {
-            transElement(node, 'title', true);
+            if (transElement(node, 'title', true)) {
+                hasTranslated = true;
+            }
         }
+
+        return hasTranslated;
     }
 
     /**
      * 遍历并翻译节点
+     * @returns {boolean} 当前节点或其子节点是否有翻译成功
      */
     function traverseNode(node) {
-        if (!node || shouldIgnoreNode(node)) return;
+        if (!node || shouldIgnoreNode(node)) return false;
+
+        let hasTranslated = false;
 
         if (node.nodeType === Node.ELEMENT_NODE) {
             // 翻译属性
-            transElementAttrs(node);
+            if (transElementAttrs(node)) {
+                hasTranslated = true;
+            }
 
             // 遍历子节点
             const useTreeWalker = node.childNodes.length > 10;
@@ -347,18 +392,30 @@
 
                 let current;
                 while (current = walker.nextNode()) {
-                    if (current !== node) traverseNode(current);
+                    if (current !== node && traverseNode(current)) {
+                        hasTranslated = true;
+                    }
                 }
             } else {
-                Array.from(node.childNodes).forEach(traverseNode);
+                Array.from(node.childNodes).forEach(child => {
+                    if (traverseNode(child)) {
+                        hasTranslated = true;
+                    }
+                });
             }
 
-            // 标记已翻译
-            node.setAttribute?.(APPLIED_ATTR, 'true');
+            // 只在有翻译成功时才标记
+            if (hasTranslated) {
+                node.setAttribute?.(APPLIED_ATTR, 'true');
+            }
 
         } else if (node.nodeType === Node.TEXT_NODE && node.length > 0 && node.length <= 500) {
-            transElement(node, 'data');
+            if (transElement(node, 'data')) {
+                hasTranslated = true;
+            }
         }
+
+        return hasTranslated;
     }
 
     // ==================== 选择器翻译 ====================
@@ -452,6 +509,47 @@
         });
     }
 
+    /**
+     * 重试翻译未标记的元素
+     */
+    function retryUntranslated() {
+        if (!document.body) return;
+
+        // 查找所有未标记的元素
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+            {
+                acceptNode: node => {
+                    // 跳过已标记的元素
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (node.hasAttribute?.(APPLIED_ATTR)) {
+                            return NodeFilter.FILTER_REJECT;
+                        }
+                        if (langConf.reIgnoreTag.includes(node.tagName?.toUpperCase())) {
+                            return NodeFilter.FILTER_REJECT;
+                        }
+                    }
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }
+        );
+
+        let retryCount = 0;
+        let node;
+        while (node = walker.nextNode()) {
+            if (traverseNode(node)) {
+                retryCount++;
+            }
+        }
+
+        if (retryCount > 0) {
+            console.log(`[Docker 中文化] 重试翻译: 成功翻译 ${retryCount} 个元素`);
+        }
+
+        return retryCount;
+    }
+
     // ==================== 监听器 ====================
 
     /**
@@ -485,10 +583,22 @@
                 .filter(m => m.addedNodes.length > 0 || m.type === 'attributes' || m.type === 'characterData')
                 .forEach(m => {
                     const target = m.target;
+
+                    // 对于文本节点的变化，移除父元素的标记以允许重新翻译
+                    if (m.type === 'characterData' && target.parentElement) {
+                        target.parentElement.removeAttribute?.(APPLIED_ATTR);
+                    }
+
                     if (target.nodeType === Node.ELEMENT_NODE) {
                         const tag = target.tagName;
                         if (['SCRIPT', 'STYLE', 'svg'].includes(tag)) return;
+
+                        // 属性变化时，移除标记
+                        if (m.type === 'attributes') {
+                            target.removeAttribute?.(APPLIED_ATTR);
+                        }
                     }
+
                     traverseNode(target);
                 });
         }, 100);
@@ -552,18 +662,50 @@
 
         transTitle();
 
+        // 立即执行一次翻译
         if (document.body) {
             traverseNode(document.body);
         }
 
-        // 延迟选择器翻译
-        if (window.requestIdleCallback) {
-            window.requestIdleCallback(() => transBySelector());
-        } else {
-            setTimeout(() => transBySelector(), 100);
-        }
+        transBySelector();
+
+        // 延迟再执行一次，确保动态加载的内容也被翻译
+        setTimeout(() => {
+            console.log('[Docker 中文化] 执行延迟翻译');
+            if (document.body) {
+                // 清除标记，重新翻译
+                document.querySelectorAll(`[${APPLIED_ATTR}]`)
+                    .forEach(el => el.removeAttribute(APPLIED_ATTR));
+                traverseNode(document.body);
+            }
+            transBySelector();
+        }, 500);
+
+        // 再延迟一次，处理慢速加载的内容
+        setTimeout(() => {
+            console.log('[Docker 中文化] 执行二次延迟翻译');
+            if (document.body) {
+                document.querySelectorAll(`[${APPLIED_ATTR}]`)
+                    .forEach(el => el.removeAttribute(APPLIED_ATTR));
+                traverseNode(document.body);
+            }
+        }, 1500);
 
         watchUpdate();
+
+        // 启动定时重试（每 5 秒一次，最多重试 10 次）
+        let retryAttempts = 0;
+        const maxRetries = 10;
+        const retryInterval = setInterval(() => {
+            retryAttempts++;
+            const count = retryUntranslated();
+
+            // 如果达到最大重试次数，或者连续 3 次都没有翻译到新内容，则停止
+            if (retryAttempts >= maxRetries) {
+                clearInterval(retryInterval);
+                console.log('[Docker 中文化] 停止定时重试（达到最大次数）');
+            }
+        }, 5000);
     }
 
     // 执行

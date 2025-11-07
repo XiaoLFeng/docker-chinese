@@ -60,10 +60,14 @@
                     'Using 0 of 1 private repositories': '使用 0 / 1 个私有仓库',
                     'To push a new tag to this repository': '推送新标签到此仓库',
                     'Tags cannot be overwritten in this repository': '此仓库中的标签无法被覆盖',
+                    'The repository overview is shown in the public view of your repository when the repository has at least one image. Use it to tell users what your image does and how to run it. ': '当仓库至少有一个镜像时，仓库概览会显示在仓库的公开视图中。使用它来告诉用户您的镜像功能以及如何运行它。',
+
 
                     // 概览相关
-                    'An overview describes what your image does and how to run it. It displays in': '概览描述您的镜像功能以及如何运行它。显示在',
-                    'the public view of your repository once you have pushed some content': '您推送内容后仓库的公开视图中',
+                    'An overview describes what your image does and how to run it.': '概览描述您的镜像功能以及如何运行它。',
+                    'It displays in': '显示在',
+                    'the public view of your repository': '您仓库的公开视图',
+                    'once you have pushed some content.': '在您推送内容后。',
 
                     // 安全设置
                     'Image security insight settings': '镜像安全洞察设置',
@@ -71,20 +75,38 @@
                     'Docker Scout image analysis': 'Docker Scout 镜像分析',
                     'Know when new CVEs impact your images, learn where they\'re introduced, and get recommendations for remediation options': '了解新 CVE 何时影响您的镜像、它们的来源以及修复建议',
                     'Enable repos in bulk on Scout Dashboard': '在 Scout 仪表板上批量启用仓库',
-                    'Images will be scanned once when pushed and the vulnerability report saved at that point in time': '镜像将在推送时扫描一次，并保存该时间点的漏洞报告',
+                    'Images will be scanned once when pushed and the vulnerability report saved at that point in time.': '镜像将在推送时扫描一次，并保存该时间点的漏洞报告。',
+                    'Use a regular expression to match tag names based on patterns, such as specific words, prefixes or version formats.': '使用正则表达式根据模式匹配标签名称，例如特定单词、前缀或版本格式。',
+                    'Know when new CVEs impact your images, learn where they\'re introduced, and get recommendations for remediation options.': '了解新 CVE 何时影响您的镜像、它们的来源以及修复建议。',
 
                     // 标签可变性设置
                     'Tag mutability settings': '标签可变性设置',
-                    'Control whether tags can be edited to help maintain consistent, secure, and reliable deployments': '控制标签是否可编辑，以帮助维护一致、安全和可靠的部署',
+                    'Control whether tags can be edited to help maintain consistent, secure, and reliable deployments.': '控制标签是否可编辑，以帮助维护一致、安全和可靠的部署。',
                     'All tags are mutable': '所有标签可变',
-                    'Tags can be changed to reference a different image. This allows you to retarget a tag without creating a new one': '标签可以更改以引用不同的镜像。这允许您重新定位标签而无需创建新标签',
+                    'Tags can be changed to reference a different image. This allows you to retarget a tag without creating a new one.': '标签可以更改以引用不同的镜像。这允许您重新定位标签而无需创建新标签。',
                     'All tags are immutable': '所有标签不可变',
-                    'Tags cannot be updated to point to a different image after creation. This ensures consistency and prevents accidental changes': '标签在创建后无法更新以指向不同的镜像。这确保一致性并防止意外更改',
+                    'Tags cannot be updated to point to a different image after creation. This ensures consistency and prevents accidental changes.': '标签在创建后无法更新以指向不同的镜像。这确保一致性并防止意外更改。',
                     'Specific tags are immutable': '特定标签不可变',
                     'Define specific tags that cannot be updated after creation using RegEx values': '使用正则表达式定义创建后无法更新的特定标签',
+                    'Define specific tags that cannot be updated after creation using RegEx values.': '使用正则表达式定义创建后无法更新的特定标签。',
                     'Regular expressions': '正则表达式',
                     'Use a regular expression to match tag names based on patterns, such as specific words, prefixes or version formats': '使用正则表达式根据模式匹配标签名称，例如特定单词、前缀或版本格式',
                     'Current expressions': '当前表达式',
+                    'Tags cannot be overwritten in this Repository.': '此仓库中的标签无法被覆盖。',
+
+                    // 协作者
+                    'Collaborators will be given push and pull access to this repository.': '协作者将获得对此仓库的推送和拉取权限。',
+                    'Add collaborator': '添加协作者',
+                    'Current collaborators': '当前协作者',
+                    'This repository does not have any collaborators.': '此仓库没有任何协作者。',
+
+                    // WebHook
+                    'A webhook is an HTTP call-back triggered by a specific event. You can create a single webhook to start and connect multiple webhooks to further build out your workflow.': 'Webhook 是由特定事件触发的 HTTP 回调。您可以创建单个 Webhook 来启动并连接多个 Webhook，以进一步构建您的工作流。',
+                    'When a tag is pushed to this repository, your workflows will kick off based on your specified webhooks.': '当标签被推送到此仓库时，您的工作流将根据您指定的 Webhook 启动。',
+                    'New webhook': '新建 Webhook',
+                    'Webhook name': 'Webhook 名称',
+                    'Payload URL': '有效负载 URL',
+                    'Current webhooks': '当前 Webhook',
 
                     // Docker Build Cloud
                     'Docker Build Cloud': 'Docker 云构建',
@@ -96,10 +118,12 @@
                     // 其他
                     'once you have pushed some content': '在您推送内容后',
                     'All rights reserved': '版权所有',
+                    'Repository size: ': '仓库大小：',
                 },
                 regexp: [
                     [/Using (\d+) of (\d+) private repositories/, '使用 $1 / $2 个私有仓库'],
                     [/To push a new tag to (.+)/, '推送新标签到 $1'],
+                    [/Last pushed about (\d+) hours by (.+)/, '最后推送时间约为 $1 小时前，由 $2 推送'],
                 ],
                 fragments: {
                     'once you have pushed some content': '在您推送内容后',
@@ -111,6 +135,8 @@
                     'This ensures consistency': '这确保一致性',
                     'This allows you to': '这允许您',
                     'all without managing infrastructure': '无需管理基础设施',
+                    'Thank you for your feedback!': '感谢您的反馈！',
+                    'Was this helpful?': '这个有帮助吗？',
                 }
             },
 
@@ -399,6 +425,7 @@
                     'Edit': '编辑',
                     'Save': '保存',
                     'Cancel': '取消',
+                    'Update': '更新',
                     'Close': '关闭',
                     'Back': '返回',
                     'Next': '下一步',
@@ -414,6 +441,7 @@
                     'Containers': '容器',
                     'Image': '镜像',
                     'image': '镜像',
+                    'Image Index': '镜像索引',
                     'Volume': '卷',
                     'Network': '网络',
                     'Networking': '网络',
@@ -454,6 +482,7 @@
                     'Docker Products': 'Docker 产品',
                     'Docker Offload': 'Docker 卸载',
                     'Hardened Images': '加固镜像',
+                    'Testcontainers Cloud': 'Testcontainers 云',
 
                     // ========== 导航菜单 ==========
                     'Home': '首页',
@@ -474,6 +503,7 @@
                     'About Us': '关于我们',
                     'Contact': '联系',
                     'Contact Us': '联系我们',
+                    'Username': '用户名',
 
                     // Docker Hub 导航
                     'My Hub': '我的中心',
@@ -521,6 +551,8 @@
                     'Popular': '热门',
                     'Popular repositories': '热门仓库',
                     'New': '最新',
+                    'new': '最新',
+                    'BETA': '测试版',
                     'Recently updated': '最近更新',
                     'Explore repositories': '浏览仓库',
 
@@ -549,7 +581,7 @@
                     'Image ID': '镜像 ID',
                     'Image Management': '镜像管理',
                     'Container information': '容器信息',
-                    'Repository size': '仓库大小',
+                    'Repository size:': '仓库大小',
                     'Repository overview': '仓库概览',
                     'This repository contains': '此仓库包含',
 
@@ -618,8 +650,10 @@
                     'RECOMMENDED': '推荐',
                     'NEW': '新',
                     'DEFAULT': '默认',
+                    'Default': '默认',
                     'Tag is active': '标签活跃',
                     'beta': 'Beta',
+                    'Beta': 'Beta',
                     '无': '无',
 
                     // ========== 按钮和操作 ==========
@@ -648,6 +682,7 @@
                     'Learn more': '了解更多',
                     'See all': '查看全部',
                     'Activate': '激活',
+                    'Give feedback': '提供反馈',
 
                     // 分页
                     'Go to previous page': '上一页',
@@ -656,7 +691,6 @@
                     // ========== Docker Hub 特定 ==========
                     'Collaborations': '协作',
                     'Collaborators': '协作者',
-                    'Webhooks': '网络钩子',
                     'Default privacy': '默认隐私',
                     'Notifications': '通知',
                     'Billing': '账单',
@@ -669,6 +703,27 @@
                     'All tags are immutable': '所有标签不可变',
                     'Specific tags are immutable': '特定标签不可变',
                     'Build with': '使用构建',
+                    'Are you missing a category?': '缺少分类？',
+
+                    // 仓库设置
+                    'Visibility settings': '可见性设置',
+                    'This repository is public.': '此仓库是公开的。',
+                    'This repository is active.': '此仓库处于活动状态。',
+                    'Make private': '设为私有',
+                    'Archive repository': '归档仓库',
+                    'Delete repository': '删除仓库',
+                    'Deleting a repository will': '删除仓库将',
+                    'destroy': '销毁',
+                    'cannot be undone.': '无法撤销。',
+                    'Get more': '获取更多',
+
+                    // 主题设置
+                    'Light theme': '浅色主题',
+                    'Dark theme': '深色主题',
+
+                    // Docker 套件相关
+                    'Docker Home': 'Docker 主页',
+                    'Docker Admin Console': 'Docker 管理控制台',
 
                     // ========== 页脚和资源 ==========
                     'Resources': '资源',
@@ -750,23 +805,28 @@
                     // ========== 其他 ==========
                     'Yes': '是的',
                     'No': '不是',
+
+
+                    'Sort by': '排序方式',
+                    'Newest': '最新',
+                    'Oldest': '最旧',
                 },
 
                 regexp: [
                     // 时间相关正则
-                    [/(\d+)\s*second[s]?\s*ago/, '$1秒前'],
-                    [/(\d+)\s*minute[s]?\s*ago/, '$1分钟前'],
-                    [/(\d+)\s*hour[s]?\s*ago/, '$1小时前'],
-                    [/(\d+)\s*day[s]?\s*ago/, '$1天前'],
-                    [/(\d+)\s*week[s]?\s*ago/, '$1周前'],
-                    [/(\d+)\s*month[s]?\s*ago/, '$1个月前'],
-                    [/(\d+)\s*year[s]?\s*ago/, '$1年前'],
+                    [/(\d+)\s*second[s]?\s*ago/, '$1 秒前'],
+                    [/(\d+)\s*minute[s]?\s*ago/, '$1 分钟前'],
+                    [/(\d+)\s*hour[s]?\s*ago/, '$1 小时前'],
+                    [/(\d+)\s*day[s]?\s*ago/, '$1 天前'],
+                    [/(\d+)\s*week[s]?\s*ago/, '$1 周前'],
+                    [/(\d+)\s*month[s]?\s*ago/, '$1 个月前'],
+                    [/(\d+)\s*year[s]?\s*ago/, '$1 年前'],
                     [/just now/, '刚刚'],
+                    [/about (\d+) hours? ago/, '约 $1 小时前'],
                     [/about (\d+) hours?/, '约 $1 小时'],
                     [/less than 1 day/, '不到 1 天'],
                     [/created (\d+) (\w+) ago/, '创建于 $1 $2 前'],
                     [/updated (\d+) (\w+) ago/, '更新于 $1 $2 前'],
-                    [/about (\d+) hours? ago/, '约 $1 小时前'],
                     [/^(\d+)[–-](\d+) of (\d+)$/, '第 $1–$2 条，共 $3 条'],
                     [/^Notification center: (\d+) notifications$/, '通知中心：$1 条通知'],
 
@@ -787,53 +847,34 @@
                     [/^(.+) \| Docker Hub$/, '$1 | Docker Hub'],
                     [/^(.+) \| Docker Documentation$/, '$1 | Docker 文档'],
                     [/^(.+) \| Docker$/, '$1 | Docker'],
+
+                    // Docker Hub - 通用提示
+                    [/Using (\d+) of (\d+) private repositories/, '使用 $1 / $2 个私有仓库。'],
                 ],
 
-                fragments: {},
+                fragments: {
+                    // 长句片段翻译
+                    'Public repositories are available to anyone. Private repositories are only available to you': '公开仓库对所有人可见。私有仓库仅对您可见',
+                    'all tags stored within it. This action': '其中存储的所有标签。此操作',
+                    'Explore and manage your Docker experience.': '探索和管理您的 Docker 体验。',
+                    'Manage users, control access, & set policies.': '管理用户、控制访问和设置策略。',
+                    'Find and share images with your team.': '与您的团队查找和分享镜像。',
+                    'Secure your supply chain at every level.': '在每个级别保护您的供应链。',
+                    'Local development, simplified.': '本地开发，简化。',
+                    'Speed up your builds.': '加速您的构建。',
+                    'Run integration tests with real dependencies.': '使用真实依赖项运行集成测试。',
+                    'Docker, Inc. All rights reserved.': 'Docker 公司。版权所有。',
+                },
 
                 selector: [
                     // Docker Hub - 通用导航
-                    ['h1', 'Docker Hub'],
                     ['input[placeholder*="Search"]', '搜索镜像和仓库'],
-                    ['a[href*="/explore"]', '浏览'],
-                    ['a[href*="/pricing"]', '价格'],
-                    ['a[href*="/signup"]', '注册'],
-                    ['a[href*="/login"]', '登录'],
 
                     // Docker Hub - 界面按钮（根据 aria-label 选择）
                     ['button[aria-label="open app switcher"]', '打开应用切换器'],
                     ['button[aria-label="user menu"]', '用户菜单'],
                     ['button[aria-label="collapse sidebar"]', '收起侧边栏'],
                     ['button[aria-label="open context switcher"]', '打开上下文切换器'],
-
-                    // Docker Hub - 官方镜像
-                    ['.badge:contains("Official")', '官方'],
-                    ['button:contains("Copy")', '复制'],
-                    ['.nav-link:contains("Overview")', '概览'],
-                    ['.nav-link:contains("Tags")', '标签'],
-                    ['.nav-link:contains("Security")', '安全'],
-
-                    // Docker Hub - 仓库
-                    ['h1', '镜像详情'],
-                    ['h2:contains("Popular")', '热门仓库'],
-                    ['h2:contains("Official")', '官方镜像'],
-                    ['code', ''], // 保留代码块内容
-
-                    // Docker Hub - 侧栏/抽屉/脚注兜底
-                    ['a:contains("Repositories")', '仓库'],
-                    ['a:contains("Hardened Images")', '加固镜像'],
-                    ['a:contains("Collaborations")', '协作'],
-                    ['a:contains("Settings")', '设置'],
-                    ['a:contains("Billing")', '账单'],
-                    ['a:contains("Usage")', '使用情况'],
-                    ['a:contains("Pulls")', '拉取次数'],
-                    ['a:contains("Storage")', '存储'],
-                    ['div:contains("Your account")', '你的账户'],
-                    ['div:contains("Organizations")', '组织'],
-                    ['a:contains("Create organization")', '创建组织'],
-                    ['a:contains("Contact support")', '联系支持'],
-                    ['a:contains("System status")', '系统状态'],
-                    ['button:contains("Back")', '返回'],
                 ]
             }
         },
