@@ -120,6 +120,9 @@
                 ['/tags/', 'dockerhub_tags'],            // 标签页
                 ['/layers/', 'dockerhub_layers'],        // 层信息页
                 ['/search', 'dockerhub_home'],           // 搜索页
+                ['/hardened-images/', 'dockerhub_hardened'], // 加固镜像页
+                ['/billing', 'dockerhub_billing'],    // 计费页面
+                ['/usage/', 'dockerhub_usage'],        // 使用情况页面
             ],
             'docs.docker.com': [
                 ['/engine/', 'dockerdocs_engine'],
@@ -548,19 +551,57 @@
                     return;
                 }
 
-                // 允许的文本格式标签（包括可能有嵌套的 A 标签）
-                const allowedChildTags = ['STRONG', 'B', 'EM', 'I', 'SPAN', 'A', 'U', 'MARK', 'SMALL'];
-                if (allowedChildTags.includes(childTag)) {
-                    // 为每个子元素创建唯一占位符
+                // 纯格式化标签：如果只包含文本且没有特殊属性，提取文本而不用占位符
+                const pureFormatTags = ['STRONG', 'B', 'EM', 'I', 'U', 'MARK', 'SMALL'];
+                // 需要保护的标签（有属性或特殊功能）：使用占位符
+                const protectedTags = ['A', 'SPAN'];
+
+                if (pureFormatTags.includes(childTag)) {
+                    // 检查是否有特殊属性（class、id、style 等）
+                    const hasSpecialAttrs = child.attributes.length > 0;
+                    // 检查是否有非文本子节点（嵌套元素）
+                    const hasNestedElements = Array.from(child.childNodes).some(n => n.nodeType === Node.ELEMENT_NODE);
+
+                    if (!hasSpecialAttrs && !hasNestedElements) {
+                        // 纯文本格式标签，提取文本并记录位置信息
+                        const textContent = child.textContent;
+                        const startPos = textWithPlaceholders.length;  // 记录起始位置
+                        textWithPlaceholders += textContent;
+                        const endPos = textWithPlaceholders.length;    // 记录结束位置
+
+                        // 记录格式信息以便恢复
+                        childElements.push({
+                            type: 'format',
+                            tag: childTag.toLowerCase(),
+                            text: textContent,
+                            startPos: startPos,
+                            endPos: endPos,
+                            html: child.outerHTML
+                        });
+                    } else {
+                        // 有属性或嵌套，使用占位符保护
+                        const placeholder = `__PLACEHOLDER_${placeholderIndex}__`;
+                        placeholderIndex++;
+
+                        childElements.push({
+                            type: 'placeholder',
+                            placeholder: placeholder,
+                            html: child.outerHTML
+                        });
+
+                        textWithPlaceholders += placeholder;
+                    }
+                } else if (protectedTags.includes(childTag)) {
+                    // 需要保护的标签（如链接、span），使用占位符
                     const placeholder = `__PLACEHOLDER_${placeholderIndex}__`;
                     placeholderIndex++;
 
                     childElements.push({
+                        type: 'placeholder',
                         placeholder: placeholder,
-                        html: child.outerHTML  // 保留完整 HTML（包括嵌套结构、href 等）
+                        html: child.outerHTML
                     });
 
-                    // 在文本中插入占位符
                     textWithPlaceholders += placeholder;
                 } else {
                     // 其他标签标记为不支持
@@ -586,12 +627,16 @@
             for (const [pattern, replacement] of pack.regexp) {
                 const translatedText = textToTranslate.replace(pattern, replacement);
                 if (translatedText !== textToTranslate) {
-                    // 正则匹配成功，恢复占位符为实际的 HTML
+                    // 正则匹配成功，现在需要恢复占位符
                     let newHTML = translatedText;
 
-                    // 将每个占位符替换回对应的 HTML
+                    // 恢复占位符为实际的 HTML
                     childElements.forEach(child => {
-                        newHTML = newHTML.replace(child.placeholder, child.html);
+                        if (child.type === 'placeholder') {
+                            // 占位符类型：直接替换
+                            newHTML = newHTML.replace(child.placeholder, child.html);
+                        }
+                        // format 类型不处理，让 supplementaryTranslation 去翻译格式标签内的内容
                     });
 
                     // 应用翻译结果
@@ -599,6 +644,7 @@
                     console.debug(`[Docker 中文化] 正则整体翻译: "${originalText.substring(0, 50)}..." → "${translatedText.substring(0, 50)}..."`);
 
                     // 二次翻译：对翻译后的元素中剩余的英文文本节点进行 exact 匹配
+                    // 这里会处理格式标签内的文本
                     supplementaryTranslation(element);
 
                     return true;
