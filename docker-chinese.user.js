@@ -11,6 +11,7 @@
 // @match        https://docs.docker.com/*
 // @match        https://www.docker.com/*
 // @require      https://raw.githubusercontent.com/XiaoLFeng/docker-chinese/master/docker-chinese-dict.js
+// @require      https://raw.githubusercontent.com/XiaoLFeng/docker-chinese/master/docker-chinese-phrases.js
 // @run-at       document-end
 // @grant        GM_registerMenuCommand
 // @grant        GM_getValue
@@ -24,19 +25,22 @@
     'use strict';
 
     if (typeof window.I18N === 'undefined') {
-        console.error('[Docker 中文化] 词库未加载，无法继续执行');
+        console.error('[Docker 中文化] 字段词库未加载，无法继续执行');
+        return;
+    }
+
+    if (typeof window.I18N_PHRASES === 'undefined') {
+        console.error('[Docker 中文化] 长句词库未加载，无法继续执行');
         return;
     }
 
     const DEFAULT_LANG = 'zh-CN';
     const lang = resolveLangKey(DEFAULT_LANG); // 自动匹配词库中可用语言
     const langPack = window.I18N[lang] || {};
+    const phrasePack = window.I18N_PHRASES[lang] || {}; // 新增：长句词库
     const langConf = createLangConf(langPack);
     let page = 'docker_public';
     let enable_RegExp = GM_getValue("enable_RegExp", 1);
-
-    // 翻译缓存
-    const translationCache = new Map();
 
     /**
      * 节流函数：限制函数执行频率
@@ -437,21 +441,60 @@
     }
 
     /**
-     * fetchTranslatedText 函数：从特定页面的词库中获得翻译文本内容。
-     * @param {string} key - 需要翻译的文本内容。
-     * @returns {string|boolean} 翻译后的文本内容，如果没有找到对应的翻译，那么返回 false。
+     * fetchTranslatedText 函数：从词库中获得翻译文本内容（重构版 - 无缓存）
+     * @param {string} key - 需要翻译的文本内容
+     * @returns {string|boolean} 翻译后的文本内容，如果没有找到对应的翻译，那么返回 false
      */
     function fetchTranslatedText(key) {
-        // 先查询缓存（但不缓存 false 结果，避免失败缓存永久生效）
-        const cached = translationCache.get(key);
-        if (cached && cached !== false) {
-            return cached;
+        // 智能词库回退策略：当前页面 -> 站点通用 -> 公共词库
+        const fallbackChain = buildFallbackChain(page);
+
+        // === 阶段1: 精确匹配字段词库(短词优先) ===
+        const dictResult = searchInDictionary(key, fallbackChain, langPack);
+        if (dictResult) {
+            return dictResult;
         }
 
-        // 智能词库回退策略：当前页面 -> 站点通用 -> 公共词库
+        // === 阶段2: 精确匹配长句词库 ===
+        const phraseResult = searchInPhrases(key, fallbackChain, phrasePack);
+        if (phraseResult) {
+            return phraseResult;
+        }
+
+        // === 阶段3: 片段包含匹配(仅对长文本) ===
+        if (key.length > 60 || key.split(/\s+/).length > 6) {
+            const fragmentResult = searchInFragments(key, fallbackChain, phrasePack);
+            if (fragmentResult) {
+                return fragmentResult;
+            }
+        }
+
+        // === 阶段4: 正则匹配 ===
+        if (enable_RegExp) {
+            // 先尝试字段正则(格式化类)
+            const dictRegexp = searchRegexpInDictionary(key, fallbackChain, langPack);
+            if (dictRegexp) {
+                return dictRegexp;
+            }
+
+            // 再尝试长句正则(动态内容)
+            const phraseRegexp = searchRegexpInPhrases(key, fallbackChain, phrasePack);
+            if (phraseRegexp) {
+                return phraseRegexp;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 构建回退查询链
+     * @param {string} page - 当前页面类型
+     * @returns {Array<string>} 回退查询链数组
+     */
+    function buildFallbackChain(page) {
         const fallbackChain = [page];
 
-        // 添加站点级别的回退
         if (page.startsWith('dockerhub_')) {
             fallbackChain.push('dockerhub');
         } else if (page.startsWith('dockerdocs_')) {
@@ -460,36 +503,108 @@
             fallbackChain.push('docker');
         }
 
-        // 最后回退到 public
         fallbackChain.push('public');
+        return fallbackChain;
+    }
 
-        // 尝试静态翻译
+    /**
+     * 在字段词库中搜索(精确匹配)
+     * @param {string} key - 搜索的文本
+     * @param {Array<string>} fallbackChain - 回退查询链
+     * @param {Object} langPack - 语言包
+     * @returns {string|boolean} 翻译结果或 false
+     */
+    function searchInDictionary(key, fallbackChain, langPack) {
         for (const pageName of fallbackChain) {
             const pack = langPack[pageName];
             if (pack && pack.static && pack.static[key]) {
-                const result = pack.static[key];
-                translationCache.set(key, result);
-                return result;
+                return pack.static[key];
             }
         }
+        return false;
+    }
 
-        // 尝试正则翻译
-        if (enable_RegExp) {
-            for (const pageName of fallbackChain) {
-                const pack = langPack[pageName];
-                if (pack && Array.isArray(pack.regexp)) {
-                    for (let [pattern, replacement] of pack.regexp) {
-                        const str = key.replace(pattern, replacement);
-                        if (str !== key) {
-                            translationCache.set(key, str);
-                            return str;
-                        }
+    /**
+     * 在长句词库中搜索(精确匹配)
+     * @param {string} key - 搜索的文本
+     * @param {Array<string>} fallbackChain - 回退查询链
+     * @param {Object} phrasePack - 长句语言包
+     * @returns {string|boolean} 翻译结果或 false
+     */
+    function searchInPhrases(key, fallbackChain, phrasePack) {
+        for (const pageName of fallbackChain) {
+            const pack = phrasePack[pageName];
+            if (pack && pack.static && pack.static[key]) {
+                return pack.static[key];
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 在长句词库中搜索片段(包含匹配)
+     * @param {string} key - 搜索的文本
+     * @param {Array<string>} fallbackChain - 回退查询链
+     * @param {Object} phrasePack - 长句语言包
+     * @returns {string|boolean} 翻译结果或 false
+     */
+    function searchInFragments(key, fallbackChain, phrasePack) {
+        for (const pageName of fallbackChain) {
+            const pack = phrasePack[pageName];
+            if (pack && pack.fragments) {
+                // 遍历所有片段，看key是否包含
+                for (const [fragment, translation] of Object.entries(pack.fragments)) {
+                    if (key.includes(fragment)) {
+                        // 替换片段并返回
+                        return key.replace(fragment, translation);
                     }
                 }
             }
         }
+        return false;
+    }
 
-        // 不缓存 false 结果，让下次有机会重新查询
+    /**
+     * 在字段词库中正则搜索
+     * @param {string} key - 搜索的文本
+     * @param {Array<string>} fallbackChain - 回退查询链
+     * @param {Object} langPack - 语言包
+     * @returns {string|boolean} 翻译结果或 false
+     */
+    function searchRegexpInDictionary(key, fallbackChain, langPack) {
+        for (const pageName of fallbackChain) {
+            const pack = langPack[pageName];
+            if (pack && Array.isArray(pack.regexp)) {
+                for (let [pattern, replacement] of pack.regexp) {
+                    const str = key.replace(pattern, replacement);
+                    if (str !== key) {
+                        return str;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 在长句词库中正则搜索
+     * @param {string} key - 搜索的文本
+     * @param {Array<string>} fallbackChain - 回退查询链
+     * @param {Object} phrasePack - 长句语言包
+     * @returns {string|boolean} 翻译结果或 false
+     */
+    function searchRegexpInPhrases(key, fallbackChain, phrasePack) {
+        for (const pageName of fallbackChain) {
+            const pack = phrasePack[pageName];
+            if (pack && Array.isArray(pack.regexp)) {
+                for (let [pattern, replacement] of pack.regexp) {
+                    const str = key.replace(pattern, replacement);
+                    if (str !== key) {
+                        return str;
+                    }
+                }
+            }
+        }
         return false;
     }
 
