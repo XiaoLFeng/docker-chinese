@@ -218,11 +218,7 @@
                 transElement(node, 'title', true);
             }
 
-            // 标记节点已翻译
-            if (node.setAttribute) {
-                node.setAttribute('data-i18n-translated', 'true');
-            }
-
+            // 先遍历子节点，再标记已翻译
             // 使用 TreeWalker 优化子节点遍历
             if (document.createTreeWalker && node.childNodes.length > 10) {
                 // 只对子节点较多的节点使用 TreeWalker
@@ -261,6 +257,11 @@
                 childNodes.forEach(traverseNode); // 遍历子节点
             }
 
+            // 所有子节点处理完后再标记节点已翻译
+            if (node.setAttribute) {
+                node.setAttribute('data-i18n-translated', 'true');
+            }
+
         } else if (node.nodeType === Node.TEXT_NODE) { // 文本节点翻译
             if (node.length <= 500 && node.length > 0) {
                 transElement(node, 'data');
@@ -280,14 +281,18 @@
         if (hostname === 'hub.docker.com') {
             if (pathname === '/' || pathname === '/search') {
                 return 'dockerhub_home';
+            } else if (pathname.startsWith('/repositories/')) {
+                return 'dockerhub_repositories';
             } else if (pathname.startsWith('/_/')) {
                 return 'dockerhub_official';
             } else if (pathname.includes('/tags/')) {
                 return 'dockerhub_tags';
             } else if (pathname.includes('/layers/')) {
                 return 'dockerhub_layers';
-            } else {
+            } else if (pathname.includes('/repository/')) {
                 return 'dockerhub_repo';
+            } else {
+                return 'dockerhub';
             }
         }
 
@@ -437,9 +442,10 @@
      * @returns {string|boolean} 翻译后的文本内容，如果没有找到对应的翻译，那么返回 false。
      */
     function fetchTranslatedText(key) {
-        // 先查询缓存
-        if (translationCache.has(key)) {
-            return translationCache.get(key);
+        // 先查询缓存（但不缓存 false 结果，避免失败缓存永久生效）
+        const cached = translationCache.get(key);
+        if (cached && cached !== false) {
+            return cached;
         }
 
         // 智能词库回退策略：当前页面 -> 站点通用 -> 公共词库
@@ -483,8 +489,7 @@
             }
         }
 
-        // 缓存未找到的结果，避免重复查询
-        translationCache.set(key, false);
+        // 不缓存 false 结果，让下次有机会重新查询
         return false;
     }
 

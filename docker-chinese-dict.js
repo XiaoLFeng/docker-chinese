@@ -53,6 +53,7 @@
                     // Docker 特定术语
                     'Container': '容器',
                     'Image': '镜像',
+                    'image': '镜像',
                     'Volume': '卷',
                     'Network': '网络',
                     'Service': '服务',
@@ -81,6 +82,22 @@
                     'Share': '分享',
                     'Export': '导出',
                     'Import': '导入',
+
+                    // 通用术语
+                    'Name': '名称',
+                    'Last Pushed': '最后推送',
+                    'Contains': '包含',
+                    'Visibility': '可见性',
+                    'Public': '公开',
+                    'Private': '私有',
+                    'Scout': 'Scout',
+                    'All content': '所有内容',
+                    'Search by repository name': '按仓库名称搜索',
+                    'Create a repository': '创建仓库',
+                    'Go to previous page': '上一页',
+                    'Go to next page': '下一页',
+                    'namespace': '命名空间',
+                    'Pricing': '价格',
 
                     // 导航菜单
                     'Home': '首页',
@@ -440,6 +457,34 @@
                     ['.nav-link:contains("Tags")', '标签'],
                     ['.nav-link:contains("Security")', '安全'],
                 ]
+            },
+
+            dockerhub_repositories: {
+                static: {
+                    'Repositories': '仓库',
+                    'All repositories within the': '命名空间内的所有仓库',
+                    'namespace': '命名空间',
+                    'Search by repository name': '按仓库名称搜索',
+                    'All content': '所有内容',
+                    'Create a repository': '创建仓库',
+                    // 表格列头
+                    'Name': '名称',
+                    'Last Pushed': '最后推送',
+                    'Contains': '包含',
+                    'Visibility': '可见性',
+                    'Scout': 'Scout',
+                    // 内容
+                    'image': '镜像',
+                    'Public': '公开',
+                    'Private': '私有',
+                    'Inactive': '未激活',
+                    'Activate Docker Scout in repository settings to get continuous security insights': '在仓库设置中激活 Docker Scout 以获得持续的安全洞察',
+                    // 分页
+                    'Go to previous page': '上一页',
+                    'Go to next page': '下一页',
+                },
+                regexp: [],
+                selector: []
             },
 
             dockerhub_tags: {
