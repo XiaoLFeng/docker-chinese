@@ -35,6 +35,53 @@
     let page = 'docker_public';
     let enable_RegExp = GM_getValue("enable_RegExp", 1);
 
+    // 翻译缓存
+    const translationCache = new Map();
+
+    /**
+     * 节流函数：限制函数执行频率
+     * @param {Function} func - 需要节流的函数
+     * @param {number} delay - 延迟时间（毫秒）
+     * @returns {Function} 节流后的函数
+     */
+    function throttle(func, delay) {
+        let lastCall = 0;
+        let timeoutId = null;
+        return function (...args) {
+            const now = Date.now();
+            if (now - lastCall >= delay) {
+                lastCall = now;
+                func.apply(this, args);
+            } else {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                timeoutId = setTimeout(() => {
+                    lastCall = Date.now();
+                    func.apply(this, args);
+                }, delay);
+            }
+        };
+    }
+
+    /**
+     * 防抖函数：延迟执行函数，直到停止调用一段时间后才执行
+     * @param {Function} func - 需要防抖的函数
+     * @param {number} delay - 延迟时间（毫秒）
+     * @returns {Function} 防抖后的函数
+     */
+    function debounce(func, delay) {
+        let timeoutId = null;
+        return function (...args) {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            timeoutId = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    }
+
     /**
      * watchUpdate 函数：监视页面变化，根据变化的节点进行翻译
      */
@@ -53,38 +100,53 @@
         const getCurrentURL = () => location.href;
         getCurrentURL.previousURL = getCurrentURL();
 
-        // 创建 MutationObserver 实例，监听 DOM 变化
-        const observer = new MutationObserver((mutations, observer) => {
-            const currentURL = getCurrentURL();
+        // 使用防抖处理 URL 变化
+        const handleURLChange = debounce(() => {
+            page = getPage() || 'docker_public';
+            console.log(`Docker页面变化: ${page}`);
+            transTitle();
+            transBySelector();
+        }, 300);
 
-            // 如果页面的 URL 发生变化
-            if (currentURL !== getCurrentURL.previousURL) {
-                getCurrentURL.previousURL = currentURL;
-                page = getPage() || 'docker_public'; // 当页面地址发生变化时，更新全局变量 page
-                console.log(`Docker页面变化: ${page}`);
-
-                transTitle(); // 翻译页面标题
-
-                setTimeout(() => {
-                    // 使用 CSS 选择器找到页面上的元素，并将其文本内容替换为预定义的翻译
-                    transBySelector();
-                }, 500);
-            }
-
-            // 使用 filter 方法对 mutations 数组进行筛选
+        // 使用节流处理 DOM 变化
+        const handleMutations = throttle((mutations) => {
             const filteredMutations = mutations.filter(mutation =>
                 mutation.addedNodes.length > 0 ||
                 mutation.type === 'attributes' ||
                 mutation.type === 'characterData'
             );
 
-            // 处理每个变化
-            filteredMutations.forEach(mutation => traverseNode(mutation.target));
+            filteredMutations.forEach(mutation => {
+                // 跳过不需要翻译的节点类型
+                const target = mutation.target;
+                if (target.nodeType === Node.ELEMENT_NODE) {
+                    const tagName = target.tagName;
+                    if (['SCRIPT', 'STYLE', 'svg'].includes(tagName)) {
+                        return;
+                    }
+                }
+                traverseNode(target);
+            });
+        }, 100);
+
+        // 创建 MutationObserver 实例，监听 DOM 变化
+        const observer = new MutationObserver((mutations) => {
+            const currentURL = getCurrentURL();
+
+            // 如果页面的 URL 发生变化
+            if (currentURL !== getCurrentURL.previousURL) {
+                getCurrentURL.previousURL = currentURL;
+                handleURLChange();
+            }
+
+            // 处理 DOM 变化
+            handleMutations(mutations);
         });
 
         // 配置 MutationObserver
         const config = {
             characterData: true,
+            characterDataOldValue: true,
             subtree: true,
             childList: true,
             attributeFilter: ['value', 'placeholder', 'aria-label', 'title', 'data-confirm'], // 观察特定属性变化
@@ -102,6 +164,11 @@
      */
     function traverseNode(node) {
         if (!node) {
+            return;
+        }
+
+        // 跳过已翻译的节点，避免死循环
+        if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute && node.hasAttribute('data-i18n-translated')) {
             return;
         }
 
@@ -151,11 +218,51 @@
                 transElement(node, 'title', true);
             }
 
-            let childNodes = node.childNodes;
-            childNodes.forEach(traverseNode); // 遍历子节点
+            // 标记节点已翻译
+            if (node.setAttribute) {
+                node.setAttribute('data-i18n-translated', 'true');
+            }
+
+            // 使用 TreeWalker 优化子节点遍历
+            if (document.createTreeWalker && node.childNodes.length > 10) {
+                // 只对子节点较多的节点使用 TreeWalker
+                const walker = document.createTreeWalker(
+                    node,
+                    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+                    {
+                        acceptNode: function(node) {
+                            // 过滤已翻译的节点
+                            if (node.nodeType === Node.ELEMENT_NODE &&
+                                node.hasAttribute &&
+                                node.hasAttribute('data-i18n-translated')) {
+                                return NodeFilter.FILTER_REJECT;
+                            }
+                            // 过滤忽略的标签
+                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                const tag = node.tagName.toUpperCase();
+                                if (langConf.reIgnoreTag.includes(tag)) {
+                                    return NodeFilter.FILTER_REJECT;
+                                }
+                            }
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                    }
+                );
+
+                let currentNode;
+                while (currentNode = walker.nextNode()) {
+                    if (currentNode !== node) { // 跳过根节点
+                        traverseNode(currentNode);
+                    }
+                }
+            } else {
+                // 子节点较少时使用传统方式
+                let childNodes = node.childNodes;
+                childNodes.forEach(traverseNode); // 遍历子节点
+            }
 
         } else if (node.nodeType === Node.TEXT_NODE) { // 文本节点翻译
-            if (node.length <= 500) {
+            if (node.length <= 500 && node.length > 0) {
                 transElement(node, 'data');
             }
         }
@@ -288,9 +395,16 @@
             return false;
         }
 
+        // 智能过滤：跳过已经是中文的内容
+        if (isChinese(_key)) {
+            return false;
+        }
+
         let _key_neat = _key.replace(/\xa0|[\s]+/g, ' ');
 
-        if (!/[\w,:;./-]+/.test(_key_neat)) {
+        // 移除有问题的正则检查，改为更宽松的验证
+        // 只排除纯空白和特殊符号
+        if (_key_neat.length === 0 || /^[\s\u200b-\u200d\ufeff]*$/.test(_key_neat)) {
             return false;
         }
 
@@ -304,36 +418,75 @@
     }
 
     /**
+     * isChinese 函数：检查文本是否主要包含中文
+     * @param {string} text - 需要检查的文本
+     * @returns {boolean} 如果文本主要是中文则返回 true
+     */
+    function isChinese(text) {
+        // 统计中文字符的比例
+        const chineseChars = text.match(/[\u4e00-\u9fa5]/g);
+        if (!chineseChars) {
+            return false;
+        }
+        // 如果中文字符占比超过50%，认为是中文内容
+        const chineseRatio = chineseChars.length / text.length;
+        return chineseRatio > 0.5;
+    }
+
+    /**
      * fetchTranslatedText 函数：从特定页面的词库中获得翻译文本内容。
      * @param {string} key - 需要翻译的文本内容。
      * @returns {string|boolean} 翻译后的文本内容，如果没有找到对应的翻译，那么返回 false。
      */
     function fetchTranslatedText(key) {
-        const currentPage = langPack[page] ? page : 'docker_public';
-        const pagePack = langPack[currentPage] || {};
-        const publicPack = langPack.public || {};
-
-        const staticPage = pagePack.static || {};
-        const staticPublic = publicPack.static || {};
-        let str = staticPage[key] || staticPublic[key];
-
-        if (typeof str === 'string') {
-            return str;
+        // 先查询缓存
+        if (translationCache.has(key)) {
+            return translationCache.get(key);
         }
 
-        if (enable_RegExp) {
-            const regexpList = []
-                .concat(pagePack.regexp || [])
-                .concat(publicPack.regexp || []);
+        // 智能词库回退策略：当前页面 -> 站点通用 -> 公共词库
+        const fallbackChain = [page];
 
-            for (let [pattern, replacement] of regexpList) {
-                str = key.replace(pattern, replacement);
-                if (str !== key) {
-                    return str;
+        // 添加站点级别的回退
+        if (page.startsWith('dockerhub_')) {
+            fallbackChain.push('dockerhub');
+        } else if (page.startsWith('dockerdocs_')) {
+            fallbackChain.push('dockerdocs');
+        } else if (page.startsWith('docker_')) {
+            fallbackChain.push('docker');
+        }
+
+        // 最后回退到 public
+        fallbackChain.push('public');
+
+        // 尝试静态翻译
+        for (const pageName of fallbackChain) {
+            const pack = langPack[pageName];
+            if (pack && pack.static && pack.static[key]) {
+                const result = pack.static[key];
+                translationCache.set(key, result);
+                return result;
+            }
+        }
+
+        // 尝试正则翻译
+        if (enable_RegExp) {
+            for (const pageName of fallbackChain) {
+                const pack = langPack[pageName];
+                if (pack && Array.isArray(pack.regexp)) {
+                    for (let [pattern, replacement] of pack.regexp) {
+                        const str = key.replace(pattern, replacement);
+                        if (str !== key) {
+                            translationCache.set(key, str);
+                            return str;
+                        }
+                    }
                 }
             }
         }
 
+        // 缓存未找到的结果，避免重复查询
+        translationCache.set(key, false);
         return false;
     }
 
@@ -341,12 +494,27 @@
      * transBySelector 函数：通过 CSS 选择器找到页面上的元素，并将其文本内容替换为预定义的翻译。
      */
     function transBySelector() {
-        const currentPage = langPack[page] ? page : 'docker_public';
-        const pagePack = langPack[currentPage] || {};
-        const publicPack = langPack.public || {};
-        const selectors = []
-            .concat(pagePack.selector || [])
-            .concat(publicPack.selector || []);
+        // 智能词库回退策略
+        const fallbackChain = [page];
+
+        if (page.startsWith('dockerhub_')) {
+            fallbackChain.push('dockerhub');
+        } else if (page.startsWith('dockerdocs_')) {
+            fallbackChain.push('dockerdocs');
+        } else if (page.startsWith('docker_')) {
+            fallbackChain.push('docker');
+        }
+
+        fallbackChain.push('public');
+
+        // 收集所有选择器翻译规则
+        const selectors = [];
+        for (const pageName of fallbackChain) {
+            const pack = langPack[pageName];
+            if (pack && Array.isArray(pack.selector)) {
+                selectors.push(...pack.selector);
+            }
+        }
 
         selectors.forEach(([selector, translation]) => {
             if (!selector || typeof translation !== 'string') {
@@ -384,28 +552,29 @@
             return;
         }
 
+        // 跳过已翻译的元素
+        if (element.hasAttribute && element.hasAttribute('data-i18n-selector-translated')) {
+            return;
+        }
+
         if (element.tagName === 'INPUT') {
             if (element.hasAttribute('placeholder')) {
                 element.placeholder = translation;
-                return;
-            }
-            if (["button", "submit", "reset"].includes(element.type)) {
+            } else if (["button", "submit", "reset"].includes(element.type)) {
                 element.value = translation;
-                return;
             }
-        }
-
-        if (element.tagName === 'TEXTAREA' && element.hasAttribute('placeholder')) {
+        } else if (element.tagName === 'TEXTAREA' && element.hasAttribute('placeholder')) {
             element.placeholder = translation;
-            return;
-        }
-
-        if (element.tagName === 'OPTGROUP') {
+        } else if (element.tagName === 'OPTGROUP') {
             element.label = translation;
-            return;
+        } else {
+            element.textContent = translation;
         }
 
-        element.textContent = translation;
+        // 标记已通过选择器翻译
+        if (element.setAttribute) {
+            element.setAttribute('data-i18n-selector-translated', 'true');
+        }
     }
 
     function registerMenuCommand() {
@@ -443,9 +612,14 @@
             traverseNode(document.body);
         }
 
-        setTimeout(() => {
+        // 使用 requestIdleCallback 或降级到 setTimeout
+        const scheduleTranslation = window.requestIdleCallback || function(cb) {
+            return setTimeout(cb, 100);
+        };
+
+        scheduleTranslation(() => {
             transBySelector();
-        }, 100);
+        });
 
         watchUpdate();
     }
