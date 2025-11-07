@@ -148,12 +148,16 @@
                     [/(\d+)\s*month[s]?\s*ago/, '$1个月前'],
                     [/(\d+)\s*year[s]?\s*ago/, '$1年前'],
                     [/just now/, '刚刚'],
+                    [/about (\d+) hours?/, '约 $1 小时'],
+                    [/less than 1 day/, '不到 1 天'],
+                    [/created (\d+) (\w+) ago/, '创建于 $1 $2 前'],
 
                     // Docker 特定术语正则
                     [/(\d+)\s*MB/i, '$1 MB'],
                     [/(\d+)\s*GB/i, '$1 GB'],
                     [/(\d+)\s*KB/i, '$1 KB'],
                     [/(\d+)\s*B/i, '$1 B'],
+                    [/(\d+) tag\(s\)/, '$1 个标签'],
 
                     // 版本号处理
                     [/v?(\d+\.\d+\.\d+)/, 'v$1'],
@@ -169,8 +173,33 @@
             // Docker Hub 翻译
             dockerhub: {
                 static: {
-                    'Explore repositories': '浏览仓库',
+                    // 顶部导航
+                    'My Hub': '我的中心',
+                    'Search Docker Hub': '搜索 Docker Hub',
+                    'Help': '帮助',
+                    'Notification center': '通知中心',
+                    'notifications': '条通知',
+                    'System theme': '系统主题',
+                    'open app switcher': '打开应用切换器',
+                    'user menu': '用户菜单',
+
+                    // 侧边栏
+                    'collapse sidebar': '收起侧边栏',
+                    'open context switcher': '打开上下文切换器',
+                    'Docker Personal': 'Docker 个人版',
                     'Repositories': '仓库',
+                    'Hardened Images': '加固镜像',
+                    'Collaborations': '协作',
+                    'Settings': '设置',
+                    'Default privacy': '默认隐私',
+                    'Notifications': '通知',
+                    'Billing': '账单',
+                    'Usage': '使用情况',
+                    'Pulls': '拉取次数',
+                    'Storage': '存储',
+
+                    // 通用
+                    'Explore repositories': '浏览仓库',
                     'View all': '查看全部',
                     'Official Images': '官方镜像',
                     'Verified Publisher': '已验证发布者',
@@ -193,6 +222,43 @@
                     'Dockerfile': 'Dockerfile',
                     'Compressed Size': '压缩大小',
                     'Full Size': '完整大小',
+
+                    // Docker Scout
+                    'Docker Scout': 'Docker Scout',
+                    'Inactive': '未激活',
+                    'Activate': '激活',
+
+                    // 页脚
+                    'Explore': '浏览',
+                    'Containers': '容器',
+                    'Account': '账户',
+                    'Resources': '资源',
+                    'Blog': '博客',
+                    'Download Docker': '下载 Docker',
+                    'Support': '支持',
+                    'Feedback': '反馈',
+                    'Documentation': '文档',
+                    'Hub Release Notes': 'Hub 发布说明',
+                    'Forums': '论坛',
+                    'Company': '公司',
+                    'About Us': '关于我们',
+                    'Customers': '客户',
+                    'Partners': '合作伙伴',
+                    'Newsroom': '新闻室',
+                    'Events and Webinars': '活动和网络研讨会',
+                    'Careers': '招聘',
+                    'Contact Us': '联系我们',
+                    'System Status': '系统状态',
+                    'Terms of Service': '服务条款',
+                    'Subscription Service Agreement': '订阅服务协议',
+                    'Privacy': '隐私',
+                    'Legal': '法律',
+                    'Cookies Settings': 'Cookie 设置',
+                    'Visit our Facebook page': '访问我们的 Facebook 页面',
+                    'Visit our X page': '访问我们的 X 页面',
+                    'Visit our YouTube page': '访问我们的 YouTube 页面',
+                    'Visit our LinkedIn page': '访问我们的 LinkedIn 页面',
+                    'View our RSS feed': '查看我们的 RSS 订阅',
                 },
                 regexp: [
                     [/(\d+)\s*(MB|GB|KB)/i, '$1 $2'],
@@ -351,13 +417,21 @@
                     'Docker Build Cloud executes builds on optimally-dimensioned cloud infrastructure with dedicated per-organization isolation': 'Docker 云构建在优化配置的云基础设施上执行构建，具有专用的组织隔离',
                     'Get faster builds through shared caching across your team, native multi-platform support, and encrypted data transfer - all without managing infrastructure': '通过团队共享缓存、原生多平台支持和加密数据传输获得更快的构建 - 无需管理基础设施',
                     'Go to Docker Build Cloud': '前往 Docker 云构建',
+
+                    // 标签表格
+                    'Tag': '标签',
+                    'Tag is active': '标签活跃',
+                    'Image': '镜像',
+                    'beta': 'Beta',
+
+                    // 按钮和操作
+                    'Add overview': '添加概览',
+                    'once you have pushed some content': '在您推送内容后',
+
+                    // 版权和法律
+                    'All rights reserved': '版权所有',
                 },
-                regexp: [
-                    [/(\d+)\s*(MB|GB|KB)/i, '$1 $2'],
-                    [/created (\d+) (\w+) ago/, '创建于 $1 $2 前'],
-                    [/about (\d+) hours?/, '约 $1 小时'],
-                    [/(\d+) tag\(s\)/, '$1 个标签'],
-                ],
+                regexp: [],
                 selector: [
                     ['h1', '镜像详情'],
                     ['button:contains("Copy")', '复制'],
@@ -395,23 +469,6 @@
                     'Files': '文件',
                     'Copy digest': '复制摘要',
                     'Back to tags': '返回标签',
-                },
-                regexp: [],
-                selector: []
-            },
-
-            dockerhub_repositories: {
-                static: {
-                    'Tags': '标签',
-                    'Name': '名称',
-                    'Last pushed': '最后推送',
-                    'Size': '大小',
-                    'OS/Arch': '操作系统/架构',
-                    'Manifest': '清单',
-                    'Copy digest': '复制摘要',
-                    'View layers': '查看层',
-                    'Pull command': '拉取命令',
-                    'No tags found': '未找到标签',
                 },
                 regexp: [],
                 selector: []

@@ -286,8 +286,6 @@
                 return 'dockerhub_tags';
             } else if (pathname.includes('/layers/')) {
                 return 'dockerhub_layers';
-            } else if (pathname.includes('/repositories/')) {
-                return 'dockerhub_repositories';
             } else {
                 return 'dockerhub_repo';
             }

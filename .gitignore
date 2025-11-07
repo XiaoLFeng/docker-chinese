@@ -1,0 +1,7 @@
+### SYSTEM ###
+.DS_Store
+
+### AI ###
+.claude/
+.mcp.json
+CLAUDE.md
