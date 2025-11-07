@@ -441,27 +441,27 @@
     }
 
     /**
-     * fetchTranslatedText 函数：从词库中获得翻译文本内容（重构版 - 无缓存）
+     * fetchTranslatedText 函数：从词库中获得翻译文本内容（重构版 - 无缓存 + 简化字段查询）
      * @param {string} key - 需要翻译的文本内容
      * @returns {string|boolean} 翻译后的文本内容，如果没有找到对应的翻译，那么返回 false
      */
     function fetchTranslatedText(key) {
-        // 智能词库回退策略：当前页面 -> 站点通用 -> 公共词库
+        // 智能词库回退策略：仅用于长句词库
         const fallbackChain = buildFallbackChain(page);
 
-        // === 阶段1: 精确匹配字段词库(短词优先) ===
-        const dictResult = searchInDictionary(key, fallbackChain, langPack);
+        // === 阶段1: 精确匹配字段词库(短词优先) - 直接查询 public ===
+        const dictResult = searchInDictionary(key, langPack);
         if (dictResult) {
             return dictResult;
         }
 
-        // === 阶段2: 精确匹配长句词库 ===
+        // === 阶段2: 精确匹配长句词库 - 按页面回退 ===
         const phraseResult = searchInPhrases(key, fallbackChain, phrasePack);
         if (phraseResult) {
             return phraseResult;
         }
 
-        // === 阶段3: 片段包含匹配(仅对长文本) ===
+        // === 阶段3: 片段包含匹配(仅对长文本) - 按页面回退 ===
         if (key.length > 60 || key.split(/\s+/).length > 6) {
             const fragmentResult = searchInFragments(key, fallbackChain, phrasePack);
             if (fragmentResult) {
@@ -471,13 +471,13 @@
 
         // === 阶段4: 正则匹配 ===
         if (enable_RegExp) {
-            // 先尝试字段正则(格式化类)
-            const dictRegexp = searchRegexpInDictionary(key, fallbackChain, langPack);
+            // 先尝试字段正则(格式化类) - 直接查询 public
+            const dictRegexp = searchRegexpInDictionary(key, langPack);
             if (dictRegexp) {
                 return dictRegexp;
             }
 
-            // 再尝试长句正则(动态内容)
+            // 再尝试长句正则(动态内容) - 按页面回退
             const phraseRegexp = searchRegexpInPhrases(key, fallbackChain, phrasePack);
             if (phraseRegexp) {
                 return phraseRegexp;
@@ -508,18 +508,15 @@
     }
 
     /**
-     * 在字段词库中搜索(精确匹配)
+     * 在字段词库中搜索(精确匹配) - 简化版：直接查询 public
      * @param {string} key - 搜索的文本
-     * @param {Array<string>} fallbackChain - 回退查询链
      * @param {Object} langPack - 语言包
      * @returns {string|boolean} 翻译结果或 false
      */
-    function searchInDictionary(key, fallbackChain, langPack) {
-        for (const pageName of fallbackChain) {
-            const pack = langPack[pageName];
-            if (pack && pack.static && pack.static[key]) {
-                return pack.static[key];
-            }
+    function searchInDictionary(key, langPack) {
+        const pack = langPack['public'];
+        if (pack && pack.static && pack.static[key]) {
+            return pack.static[key];
         }
         return false;
     }
@@ -565,21 +562,18 @@
     }
 
     /**
-     * 在字段词库中正则搜索
+     * 在字段词库中正则搜索 - 简化版：直接查询 public
      * @param {string} key - 搜索的文本
-     * @param {Array<string>} fallbackChain - 回退查询链
      * @param {Object} langPack - 语言包
      * @returns {string|boolean} 翻译结果或 false
      */
-    function searchRegexpInDictionary(key, fallbackChain, langPack) {
-        for (const pageName of fallbackChain) {
-            const pack = langPack[pageName];
-            if (pack && Array.isArray(pack.regexp)) {
-                for (let [pattern, replacement] of pack.regexp) {
-                    const str = key.replace(pattern, replacement);
-                    if (str !== key) {
-                        return str;
-                    }
+    function searchRegexpInDictionary(key, langPack) {
+        const pack = langPack['public'];
+        if (pack && Array.isArray(pack.regexp)) {
+            for (let [pattern, replacement] of pack.regexp) {
+                const str = key.replace(pattern, replacement);
+                if (str !== key) {
+                    return str;
                 }
             }
         }
