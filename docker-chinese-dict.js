@@ -281,6 +281,21 @@
                 selector: []
             },
 
+            dockerhub_layers: {
+                static: {
+                    'Layers': '层',
+                    'Image Layers': '镜像层',
+                    'Layer Details': '层详情',
+                    'Size': '大小',
+                    'Command': '命令',
+                    'Files': '文件',
+                    'Copy digest': '复制摘要',
+                    'Back to tags': '返回标签',
+                },
+                regexp: [],
+                selector: []
+            },
+
             dockerhub_repositories: {
                 static: {
                     'Tags': '标签',
@@ -321,6 +336,25 @@
                     'Was this helpful?': '这个有帮助吗？',
                     'Yes': '是的',
                     'No': '不是',
+                },
+                regexp: [],
+                selector: []
+            },
+
+            dockerdocs_other: {
+                static: {
+                    'Documentation': '文档',
+                    'Get started': '开始使用',
+                    'Guides': '指南',
+                    'Reference': '参考',
+                    'API Documentation': 'API 文档',
+                    'Tutorials': '教程',
+                    'Examples': '示例',
+                    'Release notes': '发布说明',
+                    'Troubleshooting': '故障排除',
+                    'FAQ': '常见问题',
+                    'Community': '社区',
+                    'Support': '支持',
                 },
                 regexp: [],
                 selector: []
@@ -448,6 +482,89 @@
                     'Pricing': '价格',
                     'Documentation': '文档',
                     'Get Started': '开始使用',
+                },
+                regexp: [],
+                selector: []
+            },
+
+            docker_pricing: {
+                static: {
+                    'Pricing': '价格',
+                    'Docker Pricing': 'Docker 价格',
+                    'Plans': '方案',
+                    'Free': '免费',
+                    'Pro': '专业版',
+                    'Team': '团队版',
+                    'Business': '商业版',
+                    'Enterprise': '企业版',
+                    'Get Started': '开始使用',
+                    'Compare plans': '比较方案',
+                    'Features': '功能特性',
+                    'Billing': '账单',
+                    'Subscription': '订阅',
+                },
+                regexp: [],
+                selector: []
+            },
+
+            docker_resources: {
+                static: {
+                    'Resources': '资源',
+                    'Docker Resources': 'Docker 资源',
+                    'Documentation': '文档',
+                    'Tutorials': '教程',
+                    'Guides': '指南',
+                    'Blog': '博客',
+                    'Community': '社区',
+                    'Support': '支持',
+                    'Training': '培训',
+                    'Certification': '认证',
+                    'Webinars': '网络研讨会',
+                    'Whitepapers': '白皮书',
+                },
+                regexp: [],
+                selector: []
+            },
+
+            docker_blog: {
+                static: {
+                    'Blog': '博客',
+                    'Docker Blog': 'Docker 博客',
+                    'Latest Posts': '最新文章',
+                    'Categories': '分类',
+                    'Tags': '标签',
+                    'Archive': '归档',
+                    'Subscribe': '订阅',
+                    'Author': '作者',
+                    'Published': '发布时间',
+                    'Read more': '阅读更多',
+                    'Leave a comment': '留言',
+                },
+                regexp: [],
+                selector: []
+            },
+
+            docker_other: {
+                static: {
+                    'Contact': '联系',
+                    'About': '关于',
+                    'Partners': '合作伙伴',
+                    'Events': '事件',
+                    'News': '新闻',
+                    'Careers': '招聘',
+                    'Press': '媒体',
+                    'Legal': '法律',
+                    'Privacy': '隐私',
+                    'Terms': '条款',
+                    'Cookie Policy': 'Cookie 政策',
+                },
+                regexp: [],
+                selector: []
+            },
+
+            docker_public: {
+                static: {
+                    // 这里可以放置所有页面通用的翻译
                 },
                 regexp: [],
                 selector: []

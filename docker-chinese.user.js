@@ -156,55 +156,55 @@
             } else if (pathname.startsWith('/_/')) {
                 return 'dockerhub-official';
             } else if (pathname.includes('/tags/')) {
-                return 'dockerhub-tags';
+                return 'dockerhub_tags';
             } else if (pathname.includes('/layers/')) {
-                return 'dockerhub-layers';
+                return 'dockerhub_layers';
             } else if (pathname.includes('/repositories/')) {
-                return 'dockerhub-repositories';
+                return 'dockerhub_repositories';
             } else {
-                return 'dockerhub-repo';
+                return 'dockerhub_repo';
             }
         }
 
         // Docker Docs 站点
         else if (hostname === 'docs.docker.com') {
             if (pathname === '/') {
-                return 'dockerdocs-home';
+                return 'dockerdocs_home';
             } else if (pathname.includes('/engine/')) {
-                return 'dockerdocs-engine';
+                return 'dockerdocs_engine';
             } else if (pathname.includes('/compose/')) {
-                return 'dockerdocs-compose';
+                return 'dockerdocs_compose';
             } else if (pathname.includes('/hub/')) {
-                return 'dockerdocs-hub';
+                return 'dockerdocs_hub';
             } else if (pathname.includes('/network/')) {
-                return 'dockerdocs-network';
+                return 'dockerdocs_network';
             } else if (pathname.includes('/storage/')) {
-                return 'dockerdocs-storage';
+                return 'dockerdocs_storage';
             } else if (pathname.includes('/config/')) {
-                return 'dockerdocs-config';
+                return 'dockerdocs_config';
             } else {
-                return 'dockerdocs-other';
+                return 'dockerdocs_other';
             }
         }
 
         // Docker 官网
         else if (hostname === 'www.docker.com' || hostname === 'docker.com') {
             if (pathname === '/') {
-                return 'docker-home';
+                return 'docker_home';
             } else if (pathname.includes('/products/')) {
-                return 'docker-products';
+                return 'docker_products';
             } else if (pathname.includes('/pricing/')) {
-                return 'docker-pricing';
+                return 'docker_pricing';
             } else if (pathname.includes('/resources/')) {
-                return 'docker-resources';
+                return 'docker_resources';
             } else if (pathname.includes('/blog/')) {
-                return 'docker-blog';
+                return 'docker_blog';
             } else {
-                return 'docker-other';
+                return 'docker_other';
             }
         }
 
-        return 'docker-public'; // 默认公共页面
+        return 'docker_public'; // 默认公共页面
     }
 
     /**

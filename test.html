@@ -68,10 +68,7 @@
     </div>
 
     <script>
-        // 模拟页面加载完成后的翻译
-        console.log('页面加载完成，等待翻译...');
-
-        // 模拟 I18N 词库（用于测试）
+        // 模拟 I18N 词库（修复版本）
         window.I18N = {
             zh: {
                 conf: {
@@ -91,6 +88,7 @@
                         'Image': '镜像',
                         'Repository': '仓库',
                         'Tag': '标签',
+                        'Tags': '标签',
                         'Size': '大小',
                         'Created': '创建时间',
                         'Login': '登录',
@@ -100,12 +98,30 @@
                         'Copy': '复制',
                         'View': '查看',
                         'More': '更多',
+                        'Welcome to Docker Hub': '欢迎使用 Docker Hub',
+                        'Search for images and repositories': '搜索镜像和仓库',
+                        'Popular repositories': '热门仓库',
+                        'Official images': '官方镜像',
+                        'Pull this image': '拉取此镜像',
+                        'Copy pull command': '复制拉取命令',
+                        'Docker commands': 'Docker 命令',
+                        'Run this container': '运行此容器',
+                        'Container information': '容器信息',
+                        'Image details': '镜像详情',
+                        'Image ID': '镜像 ID',
+                        'OS/ARCH': '操作系统/架构',
+                        'Docker version': 'Docker 版本',
+                        'Explore repositories': '浏览仓库',
+                        'Pricing': '价格',
+                        'Docs': '文档',
+                        'Support': '支持',
                     },
                     regexp: [
                         [/(\d+)B\+/, '$1B+'],
                         [/(\d+)k\+/, '$1k+'],
                         [/(\d+)\s*weeks? ago/, '$1周前'],
                         [/(\d+)\s*days? ago/, '$1天前'],
+                        [/(\d+)\s*(MB|GB|KB)/i, '$1 $2'],
                     ],
                     selector: []
                 },
@@ -132,22 +148,62 @@
 
         // 模拟翻译功能
         function translateText(text) {
-            const dict = window.I18N.zh.public.static;
-            return dict[text] || text;
+            const publicDict = window.I18N.zh.public.static;
+            const pageDict = window.I18N.zh.dockerhub_home?.static || {};
+
+            return pageDict[text] || publicDict[text] || text;
         }
 
-        // 简单的翻译测试
+        // 模拟页面类型识别
+        function getPageType() {
+            // 模拟 Docker Hub 首页
+            return 'dockerhub_home';
+        }
+
+        // 模拟翻译引擎
+        function fetchTranslatedText(key) {
+            const page = getPageType();
+            const pageDict = window.I18N.zh[page]?.static || {};
+            const publicDict = window.I18N.zh.public.static;
+
+            return pageDict[key] || publicDict[key] || false;
+        }
+
+        // 更完善的翻译测试
         setTimeout(() => {
-            document.title = translateText('Docker Hub Container Image Library | App Containerization');
+            console.log('=== Docker 中文翻译测试开始 ===');
+
+            // 翻译页面标题
+            const titleResult = fetchTranslatedText(document.title);
+            if (titleResult) {
+                document.title = titleResult;
+                console.log('✅ 页面标题翻译完成:', document.title);
+            }
+
+            // 翻译页面元素
+            let translatedCount = 0;
             document.querySelectorAll('h1, h2, h3, p, a, button, input').forEach(el => {
                 if (el.textContent.trim()) {
-                    el.textContent = translateText(el.textContent.trim());
+                    const translation = fetchTranslatedText(el.textContent.trim());
+                    if (translation && translation !== el.textContent.trim()) {
+                        el.textContent = translation;
+                        translatedCount++;
+                        console.log(`✅ 翻译: "${el.textContent.trim()}"`);
+                    }
                 }
             });
+
+            // 翻译输入框占位符
             document.querySelectorAll('input[placeholder]').forEach(el => {
-                el.placeholder = translateText(el.placeholder);
+                const translation = fetchTranslatedText(el.placeholder);
+                if (translation && translation !== el.placeholder) {
+                    el.placeholder = translation;
+                    translatedCount++;
+                    console.log(`✅ 占位符翻译: "${el.placeholder}"`);
+                }
             });
-            console.log('翻译完成！');
+
+            console.log(`=== 翻译完成，共翻译 ${translatedCount} 个元素 ===`);
         }, 1000);
     </script>
 </body>
