@@ -123,6 +123,7 @@
                 ['/hardened-images/', 'dockerhub_hardened'], // 加固镜像页
                 ['/billing', 'dockerhub_billing'],    // 计费页面
                 ['/usage/', 'dockerhub_usage'],        // 使用情况页面
+                ['/u/', 'dockerhub_user'],              // 用户主页
             ],
             'docs.docker.com': [
                 ['/engine/', 'dockerdocs_engine'],

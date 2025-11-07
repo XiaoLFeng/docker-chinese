@@ -43,12 +43,33 @@
                     'Published image artifact details': '已发布的镜像详情',
                     'How to use this image': '如何使用此镜像',
                     'View available tags': '查看可用标签',
+                    'About Official Images': '关于官方镜像',
+                    'Docker Official Images are a curated set of Docker open source and drop-in solution repositories.': 'Docker 官方镜像是一组经过精心挑选的 Docker 开源和即插即用解决方案仓库。',
+                    'Why Official Images?': '为什么选择官方镜像？',
+                    'These images have clear documentation, promote best practices, and are designed for the most common use cases.': '这些镜像具有清晰的文档，推广最佳实践，并针对最常见的用例进行设计。',
                 },
                 regexp: [],
                 fragments: {
                     'Where to file': '在哪里提交',
                     'How to use': '如何使用',
                 }
+            },
+
+            // =======================================
+            // Docker Hub - 用户主页
+            // ======================================
+            dockerhub_user: {
+                exact: {
+                    'Search by repository name': '按仓库名称搜索',
+                    'Community User': '社区用户',
+                    'Edit Profile': '编辑个人资料',
+                    'starred': '已加星标',
+                    'No starred content': '无加星标内容',
+                    'This profile has not starred any content': '此个人资料尚未加星标任何内容',
+                    'A curated set of Docker repositories hosted on Docker Hub.': '托管在 Docker Hub 上的精心策划的 Docker 仓库集。',
+                },
+                regexp: [],
+                fragments: {}
             },
 
             // =======================================
@@ -64,8 +85,7 @@
                 regexp: [
                     [/Try Docker Hardened Images free for (.+) days - SLA-backed, customizable, production-ready./, '免费试用 Docker 加固镜像 $1 天 - SLA 支持、可定制、适用于生产环境。']
                 ],
-                fragments: {
-                }
+                fragments: {}
             },
 
             // ========================================
@@ -316,6 +336,10 @@
                     'This size is calculated by summing the image\'s layers, which are compressed.': '此大小是通过对镜像的层进行压缩后求和计算得出的。',
                     'Trending this week': '本周趋势',
                     'Most pulled images': '拉取次数最多的镜像',
+                    'This weeks pulls': '本周拉取次数',
+                    'Pulls:': '拉取次数',
+                    'Not Authorized': '未授权',
+                    'profile page': '个人资料页面',
 
                     // Docker Banner 营销文案
                     'Docker Hardened Images - Secure & Compliant': 'Docker 加固镜像 - 安全且合规',
@@ -352,7 +376,9 @@
                 },
                 regexp: [
                     [/^(\d+) - (\d+) of ([\d,]+) available results.$/, '第 $1-$2 条，共 $3 条可用结果'],
-                    [/Receive notifications from (.+) when it finishes building your images. Notifications are sent to your current email address./, '当它完成构建您的镜像时，接收来自 $1 的通知。通知将发送到您当前的电子邮件地址。']
+                    [/Receive notifications from (.+) when it finishes building your images. Notifications are sent to your current email address./, '当它完成构建您的镜像时，接收来自 $1 的通知。通知将发送到您当前的电子邮件地址。'],
+                    [/Displaying (\d+) to (\d+) of ([\d,]+) repositories/, '显示 $1 到 $2 共 $3 个仓库'],
+                    [/You are not authorized to view this page. See library's (.+) instead./, '您无权查看此页面。请改为查看库的 $1。'],
                 ],
                 fragments: {
                     'Visit our': '访问我们的',
@@ -1057,6 +1083,7 @@
                     [/about (\d+) months?/, '约 $1 个月'],
                     [/about (\d+) years? ago/, '约 $1 年前'],
                     [/about (\d+) years?/, '约 $1 年'],
+                    [/almost (\d+) years?/, '将近 $1 年前'],
                     [/(\d+)\s*second[s]?\s*ago/, '$1 秒前'],
                     [/(\d+)\s*minute[s]?\s*ago/, '$1 分钟前'],
                     [/(\d+)\s*minutes?/, '$1 分钟'],
@@ -1090,6 +1117,7 @@
                     [/By (.+)/, '由 $1 提供'],
                     [/by (.+)/, '由 $1 提供'],
                     [/(\d+) of (\d+)/, '$1 / $2'],
+                    [/\+(\d+) more/, '更多 $1 个']
                 ],
 
                 fragments: {
@@ -1136,7 +1164,6 @@
                     // Docker Hub - 界面按钮（根据 aria-label 选择）
                     ['button[aria-label="open app switcher"]', '打开应用切换器'],
                     ['button[aria-label="user menu"]', '用户菜单'],
-                    ['button[aria-label="collapse sidebar"]', '收起侧边栏'],
                     ['button[aria-label="open context switcher"]', '打开上下文切换器'],
                 ]
             }
