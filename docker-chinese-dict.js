@@ -170,6 +170,7 @@
             dockerhub: {
                 static: {
                     'Explore repositories': '浏览仓库',
+                    'Repositories': '仓库',
                     'View all': '查看全部',
                     'Official Images': '官方镜像',
                     'Verified Publisher': '已验证发布者',
@@ -595,8 +596,51 @@
         zh_CN: {
             // 简体中文版本，可以与 zh 共享基础词库
             extend: true, // 继承 zh 的配置
+        },
+
+        'zh-CN': {
+            extend: true,
         }
     };
+
+    function deepMerge(target) {
+        target = target || {};
+        for (let i = 1; i < arguments.length; i++) {
+            const source = arguments[i];
+            if (!source) {
+                continue;
+            }
+            Object.keys(source).forEach(key => {
+                const value = source[key];
+                if (Array.isArray(value)) {
+                    target[key] = (target[key] || []).concat(value);
+                } else if (value && typeof value === 'object' && !(value instanceof RegExp)) {
+                    target[key] = deepMerge(target[key] || {}, value);
+                } else {
+                    target[key] = value;
+                }
+            });
+        }
+        return target;
+    }
+
+    function extendLanguage(targetKey, baseKey) {
+        if (!I18N[baseKey]) {
+            return;
+        }
+        if (!I18N[targetKey]) {
+            I18N[targetKey] = { extend: true };
+        }
+        const target = I18N[targetKey];
+        if (!target.extend) {
+            return;
+        }
+        I18N[targetKey] = deepMerge({}, I18N[baseKey], target);
+        delete I18N[targetKey].extend;
+    }
+
+    extendLanguage('zh_CN', 'zh');
+    extendLanguage('zh-CN', 'zh');
 
     // 导出词库
     if (typeof module !== 'undefined' && module.exports) {
@@ -606,7 +650,7 @@
     }
 
     // 兼容 GitHub 中文化插件的词库格式
-    if (typeof window.I18N === 'undefined') {
+    if (typeof window !== 'undefined' && typeof window.I18N === 'undefined') {
         window.I18N = I18N;
     }
 

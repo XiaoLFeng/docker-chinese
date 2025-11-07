@@ -1,29 +1,38 @@
 // ==UserScript==
 // @name         Docker 中文化插件
-// @namespace    https://github.com/xiao-lfeng/docker-chinese
+// @namespace    https://github.com/XiaoLFeng/docker-chinese
 // @description  中文化 Docker、Docker Hub 和 Docker Docs 网站的界面菜单及内容
-// @copyright    2025, XiaoLFeng (https://github.com/xiao-lfeng)
+// @copyright    2025, XiaoLFeng (https://github.com/XiaoLFeng)
 // @icon         https://www.docker.com/wp-content/uploads/2022/03/Moby-logo.png
 // @version      1.0.0
-// @author       XiaoLFeng
+// @author       筱锋
 // @license      MIT
 // @match        https://hub.docker.com/*
 // @match        https://docs.docker.com/*
 // @match        https://www.docker.com/*
-// @require      file:///Users/xiaolfeng/ProgramProjects/Personal/other/docker-chinese/docker-chinese-dict.js
+// @require      https://raw.githubusercontent.com/XiaoLFeng/docker-chinese/master/docker-chinese-dict.js
 // @run-at       document-end
 // @grant        GM_registerMenuCommand
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_notification
-// @supportURL   https://github.com/xiao-lfeng/docker-chinese/issues
+// @grant        GM_unregisterMenuCommand
+// @supportURL   https://github.com/XiaoLFeng/docker-chinese/issues
 // ==/UserScript==
 
 (function (window, document, undefined) {
     'use strict';
 
-    const lang = 'zh-CN'; // 设置默认语言
-    let page;
+    if (typeof window.I18N === 'undefined') {
+        console.error('[Docker 中文化] 词库未加载，无法继续执行');
+        return;
+    }
+
+    const DEFAULT_LANG = 'zh-CN';
+    const lang = resolveLangKey(DEFAULT_LANG); // 自动匹配词库中可用语言
+    const langPack = window.I18N[lang] || {};
+    const langConf = createLangConf(langPack);
+    let page = 'docker_public';
     let enable_RegExp = GM_getValue("enable_RegExp", 1);
 
     /**
@@ -36,6 +45,10 @@
             window.WebKitMutationObserver ||
             window.MozMutationObserver;
 
+        if (!MutationObserver || !document.body) {
+            return;
+        }
+
         // 获取当前页面的 URL
         const getCurrentURL = () => location.href;
         getCurrentURL.previousURL = getCurrentURL();
@@ -47,30 +60,26 @@
             // 如果页面的 URL 发生变化
             if (currentURL !== getCurrentURL.previousURL) {
                 getCurrentURL.previousURL = currentURL;
-                page = getPage(); // 当页面地址发生变化时，更新全局变量 page
+                page = getPage() || 'docker_public'; // 当页面地址发生变化时，更新全局变量 page
                 console.log(`Docker页面变化: ${page}`);
 
                 transTitle(); // 翻译页面标题
 
-                if (page) {
-                    setTimeout(() => {
-                        // 使用 CSS 选择器找到页面上的元素，并将其文本内容替换为预定义的翻译
-                        transBySelector();
-                    }, 500);
-                }
+                setTimeout(() => {
+                    // 使用 CSS 选择器找到页面上的元素，并将其文本内容替换为预定义的翻译
+                    transBySelector();
+                }, 500);
             }
 
-            if (page) {
-                // 使用 filter 方法对 mutations 数组进行筛选
-                const filteredMutations = mutations.filter(mutation =>
-                    mutation.addedNodes.length > 0 ||
-                    mutation.type === 'attributes' ||
-                    mutation.type === 'characterData'
-                );
+            // 使用 filter 方法对 mutations 数组进行筛选
+            const filteredMutations = mutations.filter(mutation =>
+                mutation.addedNodes.length > 0 ||
+                mutation.type === 'attributes' ||
+                mutation.type === 'characterData'
+            );
 
-                // 处理每个变化
-                filteredMutations.forEach(mutation => traverseNode(mutation.target));
-            }
+            // 处理每个变化
+            filteredMutations.forEach(mutation => traverseNode(mutation.target));
         });
 
         // 配置 MutationObserver
@@ -82,7 +91,9 @@
         };
 
         // 开始观察 document.body 的变化
-        observer.observe(document.body, config);
+        if (document.body) {
+            observer.observe(document.body, config);
+        }
     }
 
     /**
@@ -90,11 +101,20 @@
      * @param {Node} node - 需要遍历的节点。
      */
     function traverseNode(node) {
+        if (!node) {
+            return;
+        }
+
+        const nodeId = node.id || '';
+        const nodeClass = (node.className || '').toString();
+        const nodeTag = (node.tagName || '').toUpperCase();
+        const nodeItemprop = node.getAttribute ? (node.getAttribute('itemprop') || '') : '';
+
         // 跳过忽略的元素
-        if (I18N.conf.reIgnoreId.test(node.id) ||
-            I18N.conf.reIgnoreClass.test(node.className) ||
-            I18N.conf.reIgnoreTag.includes(node.tagName) ||
-            (node.getAttribute && I18N.conf.reIgnoreItemprop.test(node.getAttribute("itemprop")))
+        if ((nodeId && langConf.reIgnoreId.test(nodeId)) ||
+            (nodeClass && langConf.reIgnoreClass.test(nodeClass)) ||
+            (nodeTag && langConf.reIgnoreTag.includes(nodeTag)) ||
+            (nodeItemprop && langConf.reIgnoreItemprop.test(nodeItemprop))
         ) {
             return;
         }
@@ -152,9 +172,9 @@
         // Docker Hub 站点
         if (hostname === 'hub.docker.com') {
             if (pathname === '/' || pathname === '/search') {
-                return 'dockerhub-home';
+                return 'dockerhub_home';
             } else if (pathname.startsWith('/_/')) {
-                return 'dockerhub-official';
+                return 'dockerhub_official';
             } else if (pathname.includes('/tags/')) {
                 return 'dockerhub_tags';
             } else if (pathname.includes('/layers/')) {
@@ -211,18 +231,26 @@
      * transTitle 函数：翻译页面标题
      */
     function transTitle() {
+        const titlePack = langPack.title;
+        if (!titlePack) {
+            return;
+        }
+
         let key = document.title;
-        let str = I18N[lang]['title']['static'][key] || '';
-        if (!str) {
-            let res = I18N[lang]['title'].regexp || [];
-            for (let [a, b] of res) {
-                str = key.replace(a, b);
-                if (str !== key) {
+        let str = titlePack.static?.[key] || '';
+        if (!str && Array.isArray(titlePack.regexp)) {
+            for (let [pattern, replacement] of titlePack.regexp) {
+                const replaced = key.replace(pattern, replacement);
+                if (replaced !== key) {
+                    str = replaced;
                     break;
                 }
             }
         }
-        document.title = str;
+
+        if (str) {
+            document.title = str;
+        }
     }
 
     /**
@@ -250,13 +278,21 @@
      * @returns {string|boolean} 翻译后的文本内容，如果没有找到对应的翻译，那么返回 false。
      */
     function translateText(text) {
-        // 内容为空, 空白字符和或数字, 不存在英文字母和符号, 跳过
-        if (!isNaN(text) || !/[a-zA-Z,.]+/.test(text)) {
+        if (typeof text !== 'string') {
             return false;
         }
 
         let _key = text.trim();
+
+        if (!_key) {
+            return false;
+        }
+
         let _key_neat = _key.replace(/\xa0|[\s]+/g, ' ');
+
+        if (!/[\w,:;./-]+/.test(_key_neat)) {
+            return false;
+        }
 
         let str = fetchTranslatedText(_key_neat);
 
@@ -273,19 +309,25 @@
      * @returns {string|boolean} 翻译后的文本内容，如果没有找到对应的翻译，那么返回 false。
      */
     function fetchTranslatedText(key) {
-        // 静态翻译
-        let str = I18N[lang][page]['static'][key] || I18N[lang]['public']['static'][key];
+        const currentPage = langPack[page] ? page : 'docker_public';
+        const pagePack = langPack[currentPage] || {};
+        const publicPack = langPack.public || {};
+
+        const staticPage = pagePack.static || {};
+        const staticPublic = publicPack.static || {};
+        let str = staticPage[key] || staticPublic[key];
 
         if (typeof str === 'string') {
             return str;
         }
 
-        // 正则翻译
         if (enable_RegExp) {
-            let res = (I18N[lang][page].regexp || []).concat(I18N[lang]['public'].regexp || []);
+            const regexpList = []
+                .concat(pagePack.regexp || [])
+                .concat(publicPack.regexp || []);
 
-            for (let [a, b] of res) {
-                str = key.replace(a, b);
+            for (let [pattern, replacement] of regexpList) {
+                str = key.replace(pattern, replacement);
                 if (str !== key) {
                     return str;
                 }
@@ -299,51 +341,151 @@
      * transBySelector 函数：通过 CSS 选择器找到页面上的元素，并将其文本内容替换为预定义的翻译。
      */
     function transBySelector() {
-        let res = (I18N[lang][page]?.selector || []).concat(I18N[lang]['public'].selector || []);
+        const currentPage = langPack[page] ? page : 'docker_public';
+        const pagePack = langPack[currentPage] || {};
+        const publicPack = langPack.public || {};
+        const selectors = []
+            .concat(pagePack.selector || [])
+            .concat(publicPack.selector || []);
 
-        if (res.length > 0) {
-            for (let [selector, translation] of res) {
-                let element = document.querySelector(selector);
-                if (element) {
-                    element.textContent = translation;
+        selectors.forEach(([selector, translation]) => {
+            if (!selector || typeof translation !== 'string') {
+                return;
+            }
+
+            const containsMatch = selector.match(/^(.*):contains\((['"])(.+?)\2\)$/);
+            if (containsMatch) {
+                const baseSelector = containsMatch[1].trim();
+                const needle = containsMatch[3];
+                try {
+                    const elements = document.querySelectorAll(baseSelector);
+                    elements.forEach(element => {
+                        if (element.textContent && element.textContent.includes(needle)) {
+                            applySelectorTranslation(element, translation);
+                        }
+                    });
+                } catch (error) {
+                    console.warn('[Docker 中文化] 选择器解析失败:', selector, error);
                 }
+                return;
+            }
+
+            try {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(element => applySelectorTranslation(element, translation));
+            } catch (error) {
+                console.warn('[Docker 中文化] 选择器解析失败:', selector, error);
+            }
+        });
+    }
+
+    function applySelectorTranslation(element, translation) {
+        if (!element) {
+            return;
+        }
+
+        if (element.tagName === 'INPUT') {
+            if (element.hasAttribute('placeholder')) {
+                element.placeholder = translation;
+                return;
+            }
+            if (["button", "submit", "reset"].includes(element.type)) {
+                element.value = translation;
+                return;
             }
         }
+
+        if (element.tagName === 'TEXTAREA' && element.hasAttribute('placeholder')) {
+            element.placeholder = translation;
+            return;
+        }
+
+        if (element.tagName === 'OPTGROUP') {
+            element.label = translation;
+            return;
+        }
+
+        element.textContent = translation;
     }
 
     function registerMenuCommand() {
+        if (typeof GM_registerMenuCommand !== 'function') {
+            return;
+        }
         const toggleRegExp = () => {
             enable_RegExp = !enable_RegExp;
             GM_setValue("enable_RegExp", enable_RegExp);
-            GM_notification(`已${enable_RegExp ? '开启' : '关闭'}正则功能`);
+            if (typeof GM_notification === 'function') {
+                GM_notification(`已${enable_RegExp ? '开启' : '关闭'}正则功能`);
+            }
             if (enable_RegExp) {
                 location.reload();
             }
-            GM_unregisterMenuCommand(id);
-            id = GM_registerMenuCommand(`${enable_RegExp ? '关闭' : '开启'}正则功能`, toggleRegExp);
+            if (typeof GM_unregisterMenuCommand === 'function' && menuId) {
+                GM_unregisterMenuCommand(menuId);
+            }
+            menuId = GM_registerMenuCommand(`${enable_RegExp ? '关闭' : '开启'}正则功能`, toggleRegExp);
         };
 
-        let id = GM_registerMenuCommand(`${enable_RegExp ? '关闭' : '开启'}正则功能`, toggleRegExp);
+        let menuId = GM_registerMenuCommand(`${enable_RegExp ? '关闭' : '开启'}正则功能`, toggleRegExp);
     }
 
     /**
      * init 函数：初始化翻译功能。
      */
     function init() {
-        page = getPage();
+        page = getPage() || 'docker_public';
         console.log(`Docker中文插件开始, 页面类型: ${page}`);
 
         transTitle();
 
-        if (page) {
+        if (document.body) {
             traverseNode(document.body);
-
-            setTimeout(() => {
-                transBySelector();
-            }, 100);
         }
 
+        setTimeout(() => {
+            transBySelector();
+        }, 100);
+
         watchUpdate();
+    }
+
+    function resolveLangKey(preferred) {
+        const seed = preferred || '';
+        const candidates = [
+            seed,
+            seed.replace('-', '_'),
+            seed.split(/[-_]/)[0],
+            'zh'
+        ].filter(Boolean);
+
+        for (const key of candidates) {
+            if (window.I18N && window.I18N[key]) {
+                return key;
+            }
+        }
+
+        const available = Object.keys(window.I18N || {});
+        return available[0] || preferred || 'zh';
+    }
+
+    function createLangConf(pack = {}) {
+        const defaults = {
+            reIgnoreId: /^$/,
+            reIgnoreClass: /(?!)/,
+            reIgnoreTag: [],
+            reIgnoreItemprop: /^$/
+        };
+
+        if (!pack.conf) {
+            return defaults;
+        }
+
+        return {
+            ...defaults,
+            ...pack.conf,
+            reIgnoreTag: Array.isArray(pack.conf.reIgnoreTag) ? pack.conf.reIgnoreTag : defaults.reIgnoreTag,
+        };
     }
 
     // 执行初始化
