@@ -37,7 +37,6 @@
     // 常量定义
     const APPLIED_ATTR = 'data-docker-cn';
     const APPLIED_SELECTOR_ATTR = 'data-docker-cn-selector';
-    const CACHE_VERSION_KEY = Symbol('cacheVersion');
 
     // 全局状态
     let currentPage = getPage();
@@ -101,7 +100,7 @@
         return {
             reIgnoreId: /^$/,
             reIgnoreClass: /(?!)/,
-            reIgnoreTag: ['SCRIPT', 'STYLE', 'svg', 'path', 'use', 'symbol', 'g', 'rect', 'circle', 'polygon', 'ellipse', 'polyline', 'line', 'defs', 'marker', 'mask', 'pattern', 'linearGradient', 'radialGradient', 'stop'],
+            reIgnoreTag: ['SCRIPT', 'STYLE', 'SVG', 'PATH', 'USE', 'SYMBOL', 'G', 'RECT', 'CIRCLE', 'POLYGON', 'ELLIPSE', 'POLYLINE', 'LINE', 'DEFS', 'MARKER', 'MASK', 'PATTERN', 'LINEARGRADIENT', 'RADIALGRADIENT', 'STOP', 'TEXT', 'TSPAN'],
             reIgnoreItemprop: /^$/
         };
     }
@@ -189,6 +188,21 @@
     }
 
     /**
+     * 转义正则表达式特殊字符
+     */
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    /**
+     * 计算文本中的中文占比
+     */
+    function getChineseRatio(text) {
+        const chineseChars = text.match(/[\u4e00-\u9fa5]/g);
+        return chineseChars ? chineseChars.length / text.length : 0;
+    }
+
+    /**
      * 检查节点是否应该被忽略
      */
     function shouldIgnoreNode(node) {
@@ -220,26 +234,53 @@
             const pack = langPack[pageName];
             if (!pack) continue;
 
-            // 1. 精确匹配
-            if (pack.exact?.[key]) return pack.exact[key];
-
-            // 2. 片段匹配（暂时禁用，避免中英文混合问题）
-            // TODO: 需要改进逻辑，支持全局替换所有片段
-            // if (key.length > 30 || key.split(/\s+/).length > 5) {
-            //     if (pack.fragments) {
-            //         for (const [fragment, translation] of Object.entries(pack.fragments)) {
-            //             if (key.includes(fragment)) {
-            //                 return key.replace(fragment, translation);
-            //             }
-            //         }
-            //     }
-            // }
-
-            // 3. 正则匹配
+            // 1. 正则匹配（最高优先级，用于动态内容）
             if (enable_RegExp && Array.isArray(pack.regexp)) {
                 for (const [pattern, replacement] of pack.regexp) {
                     const result = key.replace(pattern, replacement);
                     if (result !== key) return result;
+                }
+            }
+
+            // 2. 精确匹配（第二优先级，效率高且准确，忽略大小写）
+            if (pack.exact) {
+                // 先尝试精确匹配（区分大小写）
+                if (pack.exact[key]) return pack.exact[key];
+
+                // 如果精确匹配失败，尝试不区分大小写的匹配
+                const lowerKey = key.toLowerCase();
+                for (const [dictKey, translation] of Object.entries(pack.exact)) {
+                    if (dictKey.toLowerCase() === lowerKey) {
+                        return translation;
+                    }
+                }
+            }
+
+            // 3. 片段匹配（最低优先级，全局替换 + 中文占比验证）
+            if (key.length > 30 || key.split(/\s+/).length > 5) {
+                if (pack.fragments) {
+                    let result = key;
+                    let hasReplaced = false;
+
+                    // 遍历所有片段，全局替换每一个匹配的片段
+                    for (const [fragment, translation] of Object.entries(pack.fragments)) {
+                        if (result.includes(fragment)) {
+                            // 使用全局替换，替换所有匹配项
+                            const regex = new RegExp(escapeRegExp(fragment), 'g');
+                            result = result.replace(regex, translation);
+                            hasReplaced = true;
+                        }
+                    }
+
+                    if (hasReplaced) {
+                        // 验证：替换后的文本中文占比必须 > 10%
+                        const chineseRatio = getChineseRatio(result);
+                        if (chineseRatio > 0.1) {
+                            return result;
+                        }
+                        // 如果中文占比太低，说明翻译不完整，返回 false
+                        console.debug(`[Docker 中文化] 片段替换后中文占比过低 (${(chineseRatio * 100).toFixed(1)}%): "${key.substring(0, 50)}..."`);
+                    }
                 }
             }
         }
@@ -357,6 +398,218 @@
     }
 
     /**
+     * 补充翻译：对元素中剩余的文本节点进行 exact 和 fragments 匹配
+     * @param {Element} element - 要补充翻译的元素
+     * @returns {boolean} 是否有文本被翻译
+     */
+    function supplementaryTranslation(element) {
+        if (!element) return false;
+
+        let hasTranslated = false;
+        const fallbackChain = buildFallbackChain(currentPage);
+
+        // 遍历所有文本节点
+        const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode: (node) => {
+                    // 只处理有实际内容的文本节点
+                    if (!node.textContent || node.textContent.trim().length === 0) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    // 跳过已经是中文的节点
+                    if (isChinese(node.textContent)) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+
+                    // 检查父元素链，确保不在 SVG 或其他不应翻译的元素内部
+                    let parent = node.parentElement;
+                    while (parent) {
+                        const tagName = parent.tagName?.toUpperCase();
+                        const ignoreTags = ['SCRIPT', 'STYLE', 'CODE', 'PRE', 'TEXTAREA', 'SVG', 'NOSCRIPT'];
+                        if (ignoreTags.includes(tagName)) {
+                            return NodeFilter.FILTER_REJECT;
+                        }
+                        parent = parent.parentElement;
+                    }
+
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }
+        );
+
+        let textNode;
+        while (textNode = walker.nextNode()) {
+            const originalText = textNode.textContent.trim().replace(/\xa0|[\s]+/g, ' ');
+            if (!originalText) continue;
+
+            let nodeTranslated = false; // 跟踪当前节点是否被翻译
+
+            // 尝试 exact 匹配
+            for (const pageName of fallbackChain) {
+                const pack = langPack[pageName];
+                if (!pack || !pack.exact) continue;
+
+                const translation = pack.exact[originalText];
+                if (translation) {
+                    textNode.textContent = textNode.textContent.replace(textNode.textContent.trim(), translation);
+                    hasTranslated = true;
+                    nodeTranslated = true;
+                    console.debug(`[Docker 中文化] 二次翻译 (exact): "${originalText}" → "${translation}"`);
+                    break; // 找到翻译后停止查找
+                }
+            }
+
+            // 如果 exact 没有匹配，尝试 fragments（仅对较长文本）
+            if (!nodeTranslated && (originalText.length > 30 || originalText.split(/\s+/).length > 5)) {
+                for (const pageName of fallbackChain) {
+                    const pack = langPack[pageName];
+                    if (!pack || !pack.fragments) continue;
+
+                    let result = originalText;
+                    let fragmentMatched = false;
+
+                    for (const [fragment, translation] of Object.entries(pack.fragments)) {
+                        if (result.includes(fragment)) {
+                            const regex = new RegExp(escapeRegExp(fragment), 'g');
+                            result = result.replace(regex, translation);
+                            fragmentMatched = true;
+                        }
+                    }
+
+                    if (fragmentMatched) {
+                        const chineseRatio = getChineseRatio(result);
+                        if (chineseRatio > 0.1) {
+                            textNode.textContent = textNode.textContent.replace(textNode.textContent.trim(), result);
+                            hasTranslated = true;
+                            console.debug(`[Docker 中文化] 二次翻译 (fragments): "${originalText.substring(0, 30)}..." → "${result.substring(0, 30)}..."`);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return hasTranslated;
+    }
+
+    /**
+     * 尝试对包含子元素的父元素进行整体正则翻译
+     * @param {Element} element - 要翻译的元素
+     * @returns {boolean} 是否翻译成功
+     */
+    function tryRegexpTranslation(element) {
+        // 严格的元素类型检查：排除不应该翻译的标签
+        const tagName = element.tagName?.toUpperCase();
+        const ignoreTags = ['SCRIPT', 'STYLE', 'CODE', 'PRE', 'TEXTAREA', 'INPUT', 'NOSCRIPT', 'SVG'];
+        if (ignoreTags.includes(tagName)) return false;
+
+        // 只处理包含子元素的元素
+        const hasChildElements = Array.from(element.childNodes).some(
+            child => child.nodeType === Node.ELEMENT_NODE
+        );
+        if (!hasChildElements) return false;
+
+        // 提取完整的文本内容
+        const originalText = element.textContent?.trim();
+
+        // 安全检查：
+        // 1. 文本不能为空
+        // 2. 不能已经是中文
+        // 3. 文本长度不能太长（避免翻译大段代码）
+        // 4. 文本长度不能太短（至少要有实际内容）
+        if (!originalText || isChinese(originalText) || originalText.length > 200 || originalText.length < 5) {
+            return false;
+        }
+
+        // 检查是否包含大量特殊字符（可能是代码）
+        const specialCharsRatio = (originalText.match(/[{}()\[\];:,<>\/\\+=*&|^%$#@!~`]/g) || []).length / originalText.length;
+        if (specialCharsRatio > 0.3) return false; // 如果特殊字符超过30%，可能是代码
+
+        // 使用占位符策略：将子元素替换为占位符，翻译后再恢复
+        const childElements = [];
+        let hasUnsupportedChild = false;
+        let placeholderIndex = 0;
+        let textWithPlaceholders = '';
+
+        // 遍历所有子节点，构建带占位符的文本
+        Array.from(element.childNodes).forEach(child => {
+            if (child.nodeType === Node.TEXT_NODE) {
+                // 保留文本节点内容
+                textWithPlaceholders += child.textContent;
+            } else if (child.nodeType === Node.ELEMENT_NODE) {
+                const childTag = child.tagName?.toUpperCase();
+
+                // 检查是否是禁止翻译的标签
+                const forbiddenTags = ['SCRIPT', 'STYLE', 'CODE', 'PRE', 'TEXTAREA', 'SVG', 'NOSCRIPT', 'INPUT', 'SELECT', 'BUTTON'];
+                if (forbiddenTags.includes(childTag)) {
+                    hasUnsupportedChild = true;
+                    return;
+                }
+
+                // 允许的文本格式标签（包括可能有嵌套的 A 标签）
+                const allowedChildTags = ['STRONG', 'B', 'EM', 'I', 'SPAN', 'A', 'U', 'MARK', 'SMALL'];
+                if (allowedChildTags.includes(childTag)) {
+                    // 为每个子元素创建唯一占位符
+                    const placeholder = `__PLACEHOLDER_${placeholderIndex}__`;
+                    placeholderIndex++;
+
+                    childElements.push({
+                        placeholder: placeholder,
+                        html: child.outerHTML  // 保留完整 HTML（包括嵌套结构、href 等）
+                    });
+
+                    // 在文本中插入占位符
+                    textWithPlaceholders += placeholder;
+                } else {
+                    // 其他标签标记为不支持
+                    hasUnsupportedChild = true;
+                }
+            }
+        });
+
+        // 如果包含不支持的子元素，放弃整体翻译
+        if (hasUnsupportedChild) return false;
+
+        // 如果没有需要保留的子元素，不进行整体翻译
+        if (childElements.length === 0) return false;
+
+        const textToTranslate = textWithPlaceholders.trim();
+
+        // 尝试用正则表达式翻译（翻译带占位符的文本）
+        const fallbackChain = buildFallbackChain(currentPage);
+        for (const pageName of fallbackChain) {
+            const pack = langPack[pageName];
+            if (!pack || !enable_RegExp || !Array.isArray(pack.regexp)) continue;
+
+            for (const [pattern, replacement] of pack.regexp) {
+                const translatedText = textToTranslate.replace(pattern, replacement);
+                if (translatedText !== textToTranslate) {
+                    // 正则匹配成功，恢复占位符为实际的 HTML
+                    let newHTML = translatedText;
+
+                    // 将每个占位符替换回对应的 HTML
+                    childElements.forEach(child => {
+                        newHTML = newHTML.replace(child.placeholder, child.html);
+                    });
+
+                    // 应用翻译结果
+                    element.innerHTML = newHTML;
+                    console.debug(`[Docker 中文化] 正则整体翻译: "${originalText.substring(0, 50)}..." → "${translatedText.substring(0, 50)}..."`);
+
+                    // 二次翻译：对翻译后的元素中剩余的英文文本节点进行 exact 匹配
+                    supplementaryTranslation(element);
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * 遍历并翻译节点
      * @returns {boolean} 当前节点或其子节点是否有翻译成功
      */
@@ -369,6 +622,14 @@
             // 翻译属性
             if (transElementAttrs(node)) {
                 hasTranslated = true;
+            }
+
+            // 尝试对包含子元素的元素进行整体正则翻译
+            if (tryRegexpTranslation(node)) {
+                hasTranslated = true;
+                // 正则翻译成功后，标记元素并直接返回，不再遍历子节点
+                node.setAttribute?.(APPLIED_ATTR, 'true');
+                return true;
             }
 
             // 遍历子节点
@@ -509,46 +770,6 @@
         });
     }
 
-    /**
-     * 重试翻译未标记的元素
-     */
-    function retryUntranslated() {
-        if (!document.body) return;
-
-        // 查找所有未标记的元素
-        const walker = document.createTreeWalker(
-            document.body,
-            NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
-            {
-                acceptNode: node => {
-                    // 跳过已标记的元素
-                    if (node.nodeType === Node.ELEMENT_NODE) {
-                        if (node.hasAttribute?.(APPLIED_ATTR)) {
-                            return NodeFilter.FILTER_REJECT;
-                        }
-                        if (langConf.reIgnoreTag.includes(node.tagName?.toUpperCase())) {
-                            return NodeFilter.FILTER_REJECT;
-                        }
-                    }
-                    return NodeFilter.FILTER_ACCEPT;
-                }
-            }
-        );
-
-        let retryCount = 0;
-        let node;
-        while (node = walker.nextNode()) {
-            if (traverseNode(node)) {
-                retryCount++;
-            }
-        }
-
-        if (retryCount > 0) {
-            console.log(`[Docker 中文化] 重试翻译: 成功翻译 ${retryCount} 个元素`);
-        }
-
-        return retryCount;
-    }
 
     // ==================== 监听器 ====================
 
@@ -622,6 +843,46 @@
         });
     }
 
+    /**
+     * 监听鼠标交互，按需翻译
+     */
+    function watchMouseInteraction() {
+        if (!document.body) return;
+
+        // 处理鼠标交互事件
+        const handleInteraction = throttle((event) => {
+            const target = event.target;
+            if (!target || target.nodeType !== Node.ELEMENT_NODE) return;
+
+            // 检查目标元素及其父元素链
+            let current = target;
+            let depth = 0;
+            const maxDepth = 5; // 最多向上查找5层
+
+            while (current && depth < maxDepth) {
+                // 如果元素没有被标记，说明还没翻译过
+                if (!current.hasAttribute?.(APPLIED_ATTR) && !shouldIgnoreNode(current)) {
+                    // 尝试翻译该元素
+                    const translated = traverseNode(current);
+                    if (translated) {
+                        console.debug(`[Docker 中文化] 鼠标交互触发翻译: ${current.tagName}`, current);
+                    }
+                    break; // 翻译完成后停止向上查找
+                }
+                current = current.parentElement;
+                depth++;
+            }
+        }, 200);
+
+        // 监听点击事件
+        document.body.addEventListener('click', handleInteraction, true);
+
+        // 监听鼠标悬浮事件
+        document.body.addEventListener('mouseover', handleInteraction, true);
+
+        console.log('[Docker 中文化] 鼠标交互监听已启动');
+    }
+
     // ==================== 菜单命令 ====================
 
     function registerMenuCommand() {
@@ -669,47 +930,83 @@
 
         transBySelector();
 
-        // 延迟再执行一次，确保动态加载的内容也被翻译
-        setTimeout(() => {
-            console.log('[Docker 中文化] 执行延迟翻译');
-            if (document.body) {
-                // 清除标记，重新翻译
-                document.querySelectorAll(`[${APPLIED_ATTR}]`)
-                    .forEach(el => el.removeAttribute(APPLIED_ATTR));
-                traverseNode(document.body);
-            }
-            transBySelector();
-        }, 500);
-
         // 再延迟一次，处理慢速加载的内容
         setTimeout(() => {
-            console.log('[Docker 中文化] 执行二次延迟翻译');
+            console.log('[Docker 中文化] 延迟翻译(0)');
             if (document.body) {
                 document.querySelectorAll(`[${APPLIED_ATTR}]`)
                     .forEach(el => el.removeAttribute(APPLIED_ATTR));
                 traverseNode(document.body);
             }
-        }, 1500);
+        }, 500);
+        setTimeout(() => {
+            console.log('[Docker 中文化] 延迟翻译(1)');
+            if (document.body) {
+                document.querySelectorAll(`[${APPLIED_ATTR}]`)
+                    .forEach(el => el.removeAttribute(APPLIED_ATTR));
+                traverseNode(document.body);
+            }
+        }, 2000);
 
         watchUpdate();
-
-        // 启动定时重试（每 5 秒一次，最多重试 10 次）
-        let retryAttempts = 0;
-        const maxRetries = 10;
-        const retryInterval = setInterval(() => {
-            retryAttempts++;
-            const count = retryUntranslated();
-
-            // 如果达到最大重试次数，或者连续 3 次都没有翻译到新内容，则停止
-            if (retryAttempts >= maxRetries) {
-                clearInterval(retryInterval);
-                console.log('[Docker 中文化] 停止定时重试（达到最大次数）');
-            }
-        }, 5000);
+        watchMouseInteraction();
     }
 
-    // 执行
-    registerMenuCommand();
-    init();
+    // ==================== 执行 ====================
+
+    /**
+     * 等待页面完全加载后再初始化
+     */
+    function safeInit() {
+        registerMenuCommand();
+
+        // 检查 document.readyState
+        if (document.readyState === 'loading') {
+            // DOM 还在加载，等待 DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('[Docker 中文化] DOMContentLoaded 触发，开始初始化');
+                init();
+            });
+        } else if (document.readyState === 'interactive') {
+            // DOM 已解析，但子资源还在加载
+            // 对于 SPA，最好等 load 事件，并等待浏览器空闲或给予缓冲时间
+            window.addEventListener('load', () => {
+                console.log('[Docker 中文化] window.load 触发，等待 SPA 初始化');
+
+                // 优先使用 requestIdleCallback，等待浏览器空闲
+                if (typeof requestIdleCallback === 'function') {
+                    requestIdleCallback(() => {
+                        console.log('[Docker 中文化] 浏览器空闲，开始初始化');
+                        init();
+                    }, { timeout: 1000 }); // 最多等待 1000ms
+                } else {
+                    // 降级方案：使用延迟确保 SPA 已渲染
+                    setTimeout(() => {
+                        console.log('[Docker 中文化] 延迟后开始初始化');
+                        init();
+                    }, 300);
+                }
+            });
+        } else {
+            // document.readyState === 'complete'
+            // 页面完全加载完成，但 SPA 可能还在初始化
+            console.log('[Docker 中文化] 页面已完全加载，等待 SPA 就绪');
+
+            // 给 SPA 一点时间完成初始化和渲染
+            if (typeof requestIdleCallback === 'function') {
+                requestIdleCallback(() => {
+                    console.log('[Docker 中文化] 浏览器空闲，开始初始化');
+                    init();
+                }, { timeout: 500 }); // 最多等待 500ms
+            } else {
+                setTimeout(() => {
+                    console.log('[Docker 中文化] 延迟后开始初始化');
+                    init();
+                }, 200);
+            }
+        }
+    }
+
+    safeInit();
 
 })(window, document);

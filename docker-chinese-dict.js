@@ -57,8 +57,7 @@
             dockerhub_repo: {
                 exact: {
                     // 仓库操作相关
-                    'Using 0 of 1 private repositories': '使用 0 / 1 个私有仓库',
-                    'To push a new tag to this repository': '推送新标签到此仓库',
+                    'To push a new tag to this repository:': '推送新标签到此仓库：',
                     'Tags cannot be overwritten in this repository': '此仓库中的标签无法被覆盖',
                     'The repository overview is shown in the public view of your repository when the repository has at least one image. Use it to tell users what your image does and how to run it. ': '当仓库至少有一个镜像时，仓库概览会显示在仓库的公开视图中。使用它来告诉用户您的镜像功能以及如何运行它。',
 
@@ -78,6 +77,13 @@
                     'Images will be scanned once when pushed and the vulnerability report saved at that point in time.': '镜像将在推送时扫描一次，并保存该时间点的漏洞报告。',
                     'Use a regular expression to match tag names based on patterns, such as specific words, prefixes or version formats.': '使用正则表达式根据模式匹配标签名称，例如特定单词、前缀或版本格式。',
                     'Know when new CVEs impact your images, learn where they\'re introduced, and get recommendations for remediation options.': '了解新 CVE 何时影响您的镜像、它们的来源以及修复建议。',
+                    'Archiving this repository will prevent any new pushes and detail changes, but it will still be available for pulls.': '存档此仓库将阻止任何新的推送和详细更改，但仍然可以拉取。',
+                    'Archive repository': '存档仓库',
+                    'Prevents new pushes': '阻止新的推送',
+                    'Prevents changes on repository details': '阻止仓库详情的更改',
+                    'Still available for pulls': '仍然可以拉取',
+                    'This deletes the repository, all the tags it contains, and its build settings. This cannot be undone.': '这将删除仓库、其中包含的所有标签及其构建设置。此操作无法撤销。',
+                    'Delete repository forever': '永久删除仓库',
 
                     // 标签可变性设置
                     'Tag mutability settings': '标签可变性设置',
@@ -92,7 +98,6 @@
                     'Regular expressions': '正则表达式',
                     'Use a regular expression to match tag names based on patterns, such as specific words, prefixes or version formats': '使用正则表达式根据模式匹配标签名称，例如特定单词、前缀或版本格式',
                     'Current expressions': '当前表达式',
-                    'Tags cannot be overwritten in this Repository.': '此仓库中的标签无法被覆盖。',
 
                     // 协作者
                     'Collaborators will be given push and pull access to this repository.': '协作者将获得对此仓库的推送和拉取权限。',
@@ -122,14 +127,15 @@
                 },
                 regexp: [
                     [/Using (\d+) of (\d+) private repositories/, '使用 $1 / $2 个私有仓库'],
-                    [/To push a new tag to (.+)/, '推送新标签到 $1'],
                     [/Last pushed about (\d+) hours by (.+)/, '最后推送时间约为 $1 小时前，由 $2 推送'],
+                    [/Archive (.+)/, '归档$1'],
+                    [/Type (.+) to continue./, '输入 $1 以继续。'],
+                    [/To confirm deletion, type the name of your repository (.+)/, '要确认删除，请输入您的仓库名称 $1。']
                 ],
                 fragments: {
                     'once you have pushed some content': '在您推送内容后',
                     'the public view of your repository': '仓库的公开视图',
                     'This repository contains': '此仓库包含',
-                    'cannot be overwritten': '无法被覆盖',
                     'cannot be updated': '无法更新',
                     'after creation': '创建后',
                     'This ensures consistency': '这确保一致性',
@@ -145,18 +151,12 @@
             // ========================================
             dockerhub_repositories: {
                 exact: {
-                    'All repositories within the': '命名空间内的所有仓库',
+                    'All repositories within the': '用户',
+                    'namespace.': '下的所有仓库',
                     'Search by repository name': '按仓库名称搜索',
-                    'Activate Docker Scout in repository settings to get continuous security insights': '在仓库设置中激活 Docker Scout 以获得持续的安全洞察',
                 },
-                regexp: [
-                    [/All repositories within the (.+?) namespace/, '命名空间 $1 内的所有仓库'],
-                ],
-                fragments: {
-                    'All repositories within': '内的所有仓库',
-                    'in repository settings to get': '在仓库设置中以获得',
-                    'continuous security insights': '持续的安全洞察',
-                }
+                regexp: [],
+                fragments: {}
             },
 
             // ========================================
@@ -189,8 +189,18 @@
                     'View our RSS feed': '查看我们的 RSS 订阅',
                     'Events and Webinars': '活动和网络研讨会',
                     'Subscription Service Agreement': '订阅服务协议',
+                    'No overview available': '暂无可用概览',
+                    'This repository doesn\'t have an overview': '此仓库没有概览',
+                    'Tag summary': '标签摘要',
+                    'Recent tags': '最近标签',
+                    'Content type': '内容类型',
+                    'Last updated': '最后更新',
+                    'Manage Repository': '管理仓库',
+                    'This size is calculated by summing the image\'s layers, which are compressed.': '此大小是通过对镜像的层进行压缩后求和计算得出的。'
                 },
-                regexp: [],
+                regexp: [
+                    [/^(\d+) - (\d+) of ([\d,]+) available results.$/, '第 $1–$2 条，共 $3 条可用结果'],
+                ],
                 fragments: {
                     'Visit our': '访问我们的',
                     'View our': '查看我们的',
@@ -440,7 +450,6 @@
                     'Container': '容器',
                     'Containers': '容器',
                     'Image': '镜像',
-                    'image': '镜像',
                     'Image Index': '镜像索引',
                     'Volume': '卷',
                     'Network': '网络',
@@ -529,11 +538,8 @@
                     'Logout': '退出',
                     'Login': '登录',
                     'Sign in': '登录',
-                    'Sign In': '登录',
                     'Sign up': '注册',
-                    'Sign Up': '注册',
                     'Register': '注册',
-                    'Get Started': '开始使用',
                     'Get started': '开始使用',
                     'Get Docker': '获取 Docker',
                     'Create Account': '创建账户',
@@ -541,8 +547,9 @@
                     // ========== 仓库和镜像相关 ==========
                     'Official Image': '官方镜像',
                     'Official images': '官方镜像',
-                    'Official Images': '官方镜像',
+                    'Docker Hardened Images': 'Docker 加固镜像',
                     'Docker Official Images': 'Docker 官方镜像',
+                    'Docker Official Image': 'Docker 官方镜像',
                     'Verified Publisher': '已验证发布者',
                     'Sponsored OSS': '赞助开源软件',
                     'Featured': '精选',
@@ -551,7 +558,7 @@
                     'Popular': '热门',
                     'Popular repositories': '热门仓库',
                     'New': '最新',
-                    'new': '最新',
+                    'Copied!': '已复制~',
                     'BETA': '测试版',
                     'Recently updated': '最近更新',
                     'Explore repositories': '浏览仓库',
@@ -595,18 +602,30 @@
                     'Architecture': '架构',
                     'OS': '操作系统',
                     'Operating System': '操作系统',
-                    'OS/ARCH': '操作系统/架构',
                     'OS/Arch': '操作系统/架构',
-                    'Compressed Size': '压缩大小',
                     'Full Size': '完整大小',
                     'Docker version': 'Docker 版本',
+                    'Was this helpful?': '这个有帮助吗？',
+                    'Images': '镜像',
+                    'Extensions': '扩展',
+                    'Plugins': '插件',
+                    'Compose': 'Compose',
+                    'AI Models': 'AI 模型',
+                    'Languages & frameworks': '语言和框架',
+                    'Integration & delivery': '集成和交付',
+                    'Message queues': '消息队列',
+                    'More categories': '更多分类',
+                    'Operating Systems': '操作系统',
+                    'Linux': 'Linux',
+                    'Windows': 'Windows',
+                    'Architectures': '架构',
+                    'More architectures': '更多架构',
 
                     // 列表和表格
                     'Name': '名称',
                     'Type': '类型',
                     'Command': '命令',
                     'Files': '文件',
-                    'Last Pushed': '最后推送',
                     'Last pushed': '最后推送',
                     'Contains': '包含',
                     'Visibility': '可见性',
@@ -649,10 +668,8 @@
                     'INCOMPLETE': '未完成',
                     'RECOMMENDED': '推荐',
                     'NEW': '新',
-                    'DEFAULT': '默认',
                     'Default': '默认',
                     'Tag is active': '标签活跃',
-                    'beta': 'Beta',
                     'Beta': 'Beta',
                     '无': '无',
 
@@ -704,6 +721,9 @@
                     'Specific tags are immutable': '特定标签不可变',
                     'Build with': '使用构建',
                     'Are you missing a category?': '缺少分类？',
+                    'Tags cannot be overwritten in this Repository.': '此仓库中的标签无法被覆盖。',
+                    'Where to start?': '从哪里开始？',
+                    'Report an issue': '报告问题',
 
                     // 仓库设置
                     'Visibility settings': '可见性设置',
@@ -732,7 +752,6 @@
                     'Forums': '论坛',
                     'Customers': '客户',
                     'Newsroom': '新闻室',
-                    'System Status': '系统状态',
                     'Terms of Service': '服务条款',
                     'Privacy': '隐私',
                     'Legal': '法律',
@@ -799,21 +818,27 @@
                     'Last month': '上月',
                     'This year': '今年',
                     'Last year': '去年',
-                    'less than 1 day': '不到 1 天',
-                    'about 9 hours': '约 9 小时',
 
                     // ========== 其他 ==========
                     'Yes': '是的',
                     'No': '不是',
+                    'By': '由',
+                    'Filter by': '筛选方式',
 
 
                     'Sort by': '排序方式',
                     'Newest': '最新',
                     'Oldest': '最旧',
+                    'Last pull': '最后拉取',
+                    'Last pulled': '最后拉取',
+                    'Status': '状态',
+                    'Compressed size': '压缩大小',
                 },
 
                 regexp: [
                     // 时间相关正则
+                    [/about (\d+) hours? ago/, '约 $1 小时前'],
+                    [/about (\d+) hours?/, '约 $1 小时'],
                     [/(\d+)\s*second[s]?\s*ago/, '$1 秒前'],
                     [/(\d+)\s*minute[s]?\s*ago/, '$1 分钟前'],
                     [/(\d+)\s*hour[s]?\s*ago/, '$1 小时前'],
@@ -822,8 +847,6 @@
                     [/(\d+)\s*month[s]?\s*ago/, '$1 个月前'],
                     [/(\d+)\s*year[s]?\s*ago/, '$1 年前'],
                     [/just now/, '刚刚'],
-                    [/about (\d+) hours? ago/, '约 $1 小时前'],
-                    [/about (\d+) hours?/, '约 $1 小时'],
                     [/less than 1 day/, '不到 1 天'],
                     [/created (\d+) (\w+) ago/, '创建于 $1 $2 前'],
                     [/updated (\d+) (\w+) ago/, '更新于 $1 $2 前'],
@@ -831,25 +854,20 @@
                     [/^Notification center: (\d+) notifications$/, '通知中心：$1 条通知'],
 
                     // Docker 特定术语正则
-                    [/(\d+)\s*(MB|GB|KB|B)/i, '$1 $2'],
+                    [/(\d+)\s*(MB|GB|KB)\b/i, '$1 $2'],  // 只匹配 MB/GB/KB，不匹配单个 B
+                    [/(\d+)\s+B\b/, '$1 B'],  // 单独处理空格+B的情况（如 "14 B"）
                     [/(\d+)\s*downloads?/, '$1 次下载'],
                     [/(\d+)\s*stars?/, '$1 个收藏'],
                     [/(\d+) tag\(s\)/, '$1 个标签'],
-
-                    // 版本号处理
-                    [/v?(\d+\.\d+\.\d+)/, 'v$1'],
 
                     // 状态信息处理
                     [/running for (\d+)/, '已运行 $1'],
                     [/exited \((\d+)\)/, '已退出 (代码 $1)'],
 
-                    // 页面标题处理
-                    [/^(.+) \| Docker Hub$/, '$1 | Docker Hub'],
-                    [/^(.+) \| Docker Documentation$/, '$1 | Docker 文档'],
-                    [/^(.+) \| Docker$/, '$1 | Docker'],
-
                     // Docker Hub - 通用提示
                     [/Using (\d+) of (\d+) private repositories/, '使用 $1 / $2 个私有仓库。'],
+                    [/By (.+)/, '由 $1 提供'],
+                    [/by (.+)/, '由 $1 提供'],
                 ],
 
                 fragments: {
@@ -864,6 +882,7 @@
                     'Speed up your builds.': '加速您的构建。',
                     'Run integration tests with real dependencies.': '使用真实依赖项运行集成测试。',
                     'Docker, Inc. All rights reserved.': 'Docker 公司。版权所有。',
+                    'Repository': '仓库',
                 },
 
                 selector: [
