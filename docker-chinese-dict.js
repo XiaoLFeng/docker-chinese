@@ -567,9 +567,375 @@
                     'Download Docker Desktop': '下载 Docker Desktop',
                     'Docker Enterprise': 'Docker 企业版',
                     'IT Operations': 'IT 运维',
+
+                    // www.docker.com 首页内容
+                    'What is Docker?': '什么是 Docker？',
+                    'Accelerate how you build, share, and run applications': '加速您构建、分享和运行应用程序的方式',
+                    'Docker helps developers build, share, run, and verify applications anywhere — without tedious environment configuration or management.': 'Docker 帮助开发者在任何地方构建、分享、运行和验证应用程序——无需繁琐的环境配置或管理。',
+
+                    // Build 部分
+                    'Spin up new environments quickly': '快速启动新环境',
+                    'Accelerate your development by building Docker images locally or in the cloud with Docker Build Cloud. Create multiple containers using Docker Compose without the hassle of local build constraints.': '通过使用 Docker Build Cloud 在本地或云端构建 Docker 镜像来加速您的开发。使用 Docker Compose 创建多个容器，无需担心本地构建限制。',
+                    'Integrate with your existing tools': '与您现有的工具集成',
+                    'Docker seamlessly integrates with your development tools, such as VS Code, CircleCI, and GitHub. Meanwhile, Docker Build Cloud fast-tracks build times, resulting in an enhanced workflow without disruption.': 'Docker 与您的开发工具（如 VS Code、CircleCI 和 GitHub）无缝集成。同时，Docker Build Cloud 加快构建时间，在不中断的情况下增强工作流程。',
+                    'Containerize applications for consistency': '容器化应用程序以确保一致性',
+                    'Ensure consistent application performance across any environment, whether it\'s on-premises Kubernetes or cloud platforms like AWS ECS, Azure ACI, and Google GKE.': '确保应用程序在任何环境中的一致性能，无论是本地 Kubernetes 还是云平台（如 AWS ECS、Azure ACI 和 Google GKE）。',
+
+                    // Share 部分
+                    'Discover and manage container images with Docker Hub': '通过 Docker Hub 发现和管理容器镜像',
+                    'Explore Docker Hub, the world\'s largest registry, where you can discover, distribute, store, and serve cloud-native components, including container images. Access a vast repository of trusted content from verified publishers and Docker Official Images.': '探索 Docker Hub，这是世界上最大的注册表，您可以在这里发现、分发、存储和提供云原生组件，包括容器镜像。访问来自经过验证的发布者和 Docker 官方镜像的大量可信内容。',
+                    'Collaborate with your team seamlessly': '与您的团队无缝协作',
+                    'Easily pull and publish images from Docker Hub to streamline sharing within your team, organization, or the broader community. Docker Hub simplifies the management and distribution of container applications.': '轻松从 Docker Hub 拉取和发布镜像，以简化团队、组织或更广泛社区内的共享。Docker Hub 简化了容器应用程序的管理和分发。',
+                    'Ensure security and trust with Docker Hub': '使用 Docker Hub 确保安全性和可信度',
+                    'Secure your workspaces with robust image access management, registry access controls, and private repositories. Docker Hub offers a secure and trusted marketplace for your container images, ensuring best practices and peace of mind.': '通过强大的镜像访问管理、注册表访问控制和私有仓库保护您的工作区。Docker Hub 为您的容器镜像提供安全可信的市场，确保最佳实践和安心使用。',
+
+                    // Run 部分
+                    'Develop secure, modern applications with Docker Desktop': '使用 Docker Desktop 开发安全的现代应用程序',
+                    'Docker Desktop simplifies and accelerates the development of secure, containerized applications. Gain speed through streamlined containerized development and ensure secure workflows with robust security measures that protect your code throughout the development lifecycle.': 'Docker Desktop 简化并加速了安全容器化应用程序的开发。通过简化的容器化开发获得速度，并通过强大的安全措施确保安全的工作流程，在整个开发生命周期中保护您的代码。',
+                    'Flexible and integrated development environment': '灵活且集成的开发环境',
+                    'Docker Desktop provides a local environment for efficient building and testing of containerized applications. It supports a wide range of programming languages and integrates seamlessly with various developer tools, including Docker Hub for pre-built components, Docker Scout for security scanning, and third-party tools.': 'Docker Desktop 提供了一个本地环境，用于高效构建和测试容器化应用程序。它支持广泛的编程语言，并与各种开发者工具无缝集成，包括用于预构建组件的 Docker Hub、用于安全扫描的 Docker Scout 以及第三方工具。',
+                    'Streamline your development workflow': '简化您的开发工作流程',
+                    'Effortlessly manage your applications with Docker Desktop\'s pre-configured templates and easy integration with image registries and CI/CD pipelines. This comprehensive platform supports both individual developers and organizations, offering a secure and flexible environment for the entire application lifecycle.': '使用 Docker Desktop 的预配置模板和与镜像注册表及 CI/CD 管道的轻松集成，轻松管理您的应用程序。这个综合平台支持个人开发者和组织，为整个应用程序生命周期提供安全灵活的环境。',
+
+                    // Verify 部分
+                    'Enhance security with Docker Scout': '使用 Docker Scout 增强安全性',
+                    'Docker Scout is a secure software supply chain solution designed to provide actionable insights for container images. It helps teams evaluate security and compliance policies, ensuring a robust security posture.': 'Docker Scout 是一个安全的软件供应链解决方案，旨在为容器镜像提供可操作的洞察。它帮助团队评估安全性和合规性策略，确保强大的安全态势。',
+                    'Increase transparency and visibility': '提高透明度和可见性',
+                    'Gain insights and context into your components, libraries, tools, and processes with Docker Scout. This increased transparency helps you understand and manage the software supply chain effectively.': '使用 Docker Scout 深入了解您的组件、库、工具和流程。这种增强的透明度帮助您有效地理解和管理软件供应链。',
+                    'Proactively address security concerns': '主动解决安全问题',
+                    'Docker Scout detects and highlights security issues, offering suggestions for remediation based on policy violations and state changes. Ensure your application security by addressing concerns before they impact production.': 'Docker Scout 检测并突出显示安全问题，根据策略违规和状态变化提供修复建议。通过在影响生产之前解决问题来确保应用程序安全。',
+
+                    // Test 部分
+                    'Test dependencies as code': '将测试依赖项编写为代码',
+                    'Eliminate the need for mocks and complex environment configurations by defining your test dependencies as code. Simply run your tests, and Docker containers will be created and deleted as needed.': '通过将测试依赖项定义为代码，消除对模拟和复杂环境配置的需求。只需运行测试，Docker 容器将根据需要创建和删除。',
+                    'Unit tests with real dependencies': '使用真实依赖项进行单元测试',
+                    'Utilize Testcontainers to provide lightweight, throwaway instances of databases, message brokers, web browsers, and more. Test anything that can be containerized for accurate, reliable testing.': '利用 Testcontainers 提供轻量级、一次性的数据库、消息代理、Web 浏览器等实例。测试任何可以容器化的内容，以实现准确可靠的测试。',
+                    'Integrate and automate with ease': '轻松集成和自动化',
+                    'Efficiently run data access layer integration tests, UI/acceptance tests, and application integration tests using containerized instances. Enjoy a clean, consistent testing environment with minimal setup.': '使用容器化实例高效运行数据访问层集成测试、UI/验收测试和应用程序集成测试。享受干净、一致的测试环境，只需最少的设置。',
+
+                    // www.docker.com 导航和 AI 相关
+                    'Skip to content': '跳转到内容',
+                    'Header Banner': '头部横幅',
+                    'Get Support': '获取支持',
+                    'Contact Sales': '联系销售',
+                    'Ponyo Menu': 'Ponyo 菜单',
+                    'AI submenu': 'AI 子菜单',
+                    'Docker for AI': 'Docker for AI',
+                    'Simplifying Agent Development': '简化 Agent 开发',
+                    'Break free of local constraints': '摆脱本地限制',
+                    'Docker MCP Catalog and Toolkit': 'Docker MCP 目录和工具包',
+                    'Docker Model Runner': 'Docker 模型运行器',
+                    'Run AI models locally': '在本地运行 AI 模型',
+
+                    // 产品功能
+                    'Containerize your applications': '容器化您的应用程序',
+                    'Discover and share container images': '发现并分享容器镜像',
+                    'Simplify software supply chain': '简化软件供应链',
+
+                    // 测试相关
+                    'Testcontainers Desktop': 'Testcontainers Desktop',
+                    'Local testing with real dependencies': '使用真实依赖项进行本地测试',
+                    'Test without limits in cloud': '在云端无限制测试',
+
+                    // 企业功能
+                    'Ship with secure enterprise-ready images': '使用安全的企业级镜像交付',
+                    'Unlimited access to Docker Hardened Images': '无限访问 Docker 加固镜像',
+
+                    // 文档和学习
+                    'Find guides': '查找指南',
+                    'Getting Started': '入门指南',
+                    'Learn Docker basics': '学习 Docker 基础',
+                    'Search library': '搜索库',
+                    'Extensions SDK': '扩展 SDK',
+
+                    // 社区
+                    'Customer Stories': '客户故事',
+                    'Open Source': '开源',
+                    'Preview Program': '预览计划',
+                    'Meetups': '聚会',
+                    'Docker Store': 'Docker 商店',
+                    'Captains': 'Docker 船长',
+
+                    // 公司信息
+                    'Let us introduce ourselves': '让我们自我介绍',
+                    'What is Container': '什么是容器',
+                    'Why Docker': '为什么选择 Docker',
+                    'Trust': '信任',
+                    'Customer Success': '客户成功',
+
+                    // 页脚链接
+                    'Products Overview': '产品概览',
+                    'Command Line Interface': '命令行界面',
+                    'IDE Extensions': 'IDE 扩展',
+                    'Container Runtime': '容器运行时',
+                    'Trainings': '培训',
+                    'Newsletter': '新闻通讯',
+                    'Pricing FAQ': '价格常见问题',
+                    'System status': '系统状态',
+                    'Brand guidelines': '品牌指南',
+
+                    // 下载和平台
+                    'Download for Mac': '下载 Mac 版',
+                    'Download for Windows': '下载 Windows 版',
+                    'Download for Linux': '下载 Linux 版',
+                    'Download Docker Desktop for Mac': '下载 Docker Desktop Mac 版',
+                    'Download Docker Desktop for Windows': '下载 Docker Desktop Windows 版',
+                    'Download Docker Desktop for Linux': '下载 Docker Desktop Linux 版',
+                    'Mac with Intel chip': 'Intel 芯片 Mac',
+                    'Mac with Apple silicon': 'Apple 芯片 Mac',
+
+                    // UI 元素
+                    'Toggle menu': '切换菜单',
+                    'Explore all': '浏览全部',
+                    'Choose plan': '选择方案',
+                    'Sign up for free': '免费注册',
+                    'Find pricing': '查找价格',
+
+                    // 统计数据
+                    'monthly developers': '月活跃开发者',
+                    'applications': '应用程序',
+                    'monthly image pulls': '月镜像拉取量',
+
+                    // 更多导航
+                    'Docker Desktop Overview': 'Docker Desktop 概览',
+                    'Docker Hub Overview': 'Docker Hub 概览',
+                    'Docker Scout Overview': 'Docker Scout 概览',
+                    'Testcontainers Overview': 'Testcontainers 概览',
+
+                    // 资源和支持
+                    'Docker Blog Home': 'Docker 博客首页',
+                    'Engineering blog': '工程博客',
+                    'Changelog': '更新日志',
+                    'Documentation Home': '文档首页',
+                    'Manuals': '手册',
+                    'API Reference': 'API 参考',
+                    'Labs': '实验室',
+
+                    // 产品详细信息
+                    'Build from any source': '从任何源构建',
+                    'Build in the cloud': '在云端构建',
+                    'Scan for vulnerabilities': '扫描漏洞',
+                    'Share images securely': '安全分享镜像',
+                    'Integrate with CI/CD': '集成 CI/CD',
+                    'Deploy anywhere': '随处部署',
+
+                    // 营销文案
+                    'Loved by developers': '受开发者喜爱',
+                    'Trusted by enterprises': '受企业信赖',
+                    'Built for teams': '为团队打造',
+                    'Secure by design': '安全设计',
+                    'Join millions of developers': '加入数百万开发者',
+                    'Start building today': '立即开始构建',
+                    'See how it works': '了解工作原理',
+                    'View all features': '查看所有功能',
+
+                    // 语言和地区
+                    'Language': '语言',
+                    'English': '英语',
+
+                    // 更多功能描述
+                    'Faster builds': '更快的构建',
+                    'Secure software supply chain': '安全的软件供应链',
+                    'Streamlined collaboration': '简化协作',
+                    'Reliable testing': '可靠的测试',
+
+                    // AI 和 MCP 相关
+                    'Connect and manage MCP tools': '连接和管理 MCP 工具',
+                    'Local-first LLM inference made easy': '本地优先的 LLM 推理变得简单',
+                    'More resources for developers': '更多开发者资源',
+                    'Docker Brings Compose to the Agent Era: Building AI Agents is Now Easy': 'Docker 将 Compose 带入 Agent 时代：构建 AI Agent 现在变得简单',
+                    'Docker Accelerates Agent Development': 'Docker 加速 Agent 开发',
+
+                    // 产品功能描述
+                    'Simplify the software supply chain': '简化软件供应链',
+                    'Speed up your image builds': '加速您的镜像构建',
+                    'Test without limits in the cloud': '在云端无限制测试',
+                    'Ship with secure, enterprise-ready images': '使用安全的企业级镜像交付',
+                    'Because security should be affordable, always': '因为安全应该始终是负担得起的',
+
+                    // 文档和学习资源
+                    'Find guides for Docker products': '查找 Docker 产品指南',
+                    'Learn the Docker basics': '学习 Docker 基础知识',
+                    'Search a library of helpful materials': '搜索有用材料库',
+                    'Skill up your Docker knowledge': '提升您的 Docker 知识',
+                    'Create and share your own extensions': '创建并分享您自己的扩展',
+
+                    // 社区相关
+                    'Connect with other Docker developers': '与其他 Docker 开发者联系',
+                    'Explore open source projects': '探索开源项目',
+                    'Help shape the future of Docker': '帮助塑造 Docker 的未来',
+                    'Get inspired with customer stories': '从客户故事中获得灵感',
+                    'Get the latest Docker news': '获取最新的 Docker 新闻',
+
+                    // 博客文章标题
+                    'Introducing Docker Model Runner': '介绍 Docker Model Runner',
+                    'A faster, simpler way to run and test AI models locally': '在本地运行和测试 AI 模型的更快、更简单的方法',
+                    'Deliver Quickly. Build Securely. Stay Competitive.': '快速交付。安全构建。保持竞争力。',
+                    'Meet growing demands for speed and security with integrated, efficient solutions': '通过集成、高效的解决方案满足对速度和安全性日益增长的需求',
+
+                    // 公司和关于
+                    'What is a Container?': '什么是容器？',
+                    'Learn about containerization': '了解容器化',
+                    'Discover what makes us different': '了解我们的与众不同之处',
+                    'Find our customer trust resources': '查找我们的客户信任资源',
+                    'Become a Docker partner': '成为 Docker 合作伙伴',
+                    'Learn how you can succeed with Docker': '了解如何使用 Docker 获得成功',
+
+                    // 社区活动
+                    'Attend live and virtual meet ups': '参加线上和线下聚会',
+                    'Gear up with exclusive SWAG': '获取专属周边',
+                    'Apply to join our team': '申请加入我们的团队',
+                    'We\'d love to hear from you': '我们很乐意听到您的声音',
+
+                    // 新闻和公告
+                    'Docker Announces SOC 2 Type 2 Attestation & ISO 27001 Certification': 'Docker 宣布 SOC 2 Type 2 认证和 ISO 27001 认证',
+                    'Learn what this means for Docker security and compliance': '了解这对 Docker 安全性和合规性的意义',
+                    'NEW Webinar series – Secure your software supply chain': '新网络研讨会系列 - 保护您的软件供应链',
+
+                    // 开发相关
+                    'Develop Apps and Agents Faster.': '更快地开发应用程序和 Agent。',
+                    'Develop': '开发',
+                    'Your foundation for secure, intelligent development': '您安全、智能开发的基础',
+                    'Verify': '验证',
+                    'Test': '测试',
+
+                    // 下载选项（详细）
+                    'Download for Mac – Apple Silicon': '下载 Mac 版 – Apple 芯片',
+                    'Download for Mac – Intel Chip': '下载 Mac 版 – Intel 芯片',
+                    'Download for Windows – AMD64': '下载 Windows 版 – AMD64',
+                    'Download for Windows – ARM64': '下载 Windows 版 – ARM64',
+                    'Learn about Docker for AI': '了解 Docker for AI',
+
+                    // 产品功能按钮
+                    'Optimize builds with Docker Build Cloud': '使用 Docker Build Cloud 优化构建',
+                    'Discover Docker Hub': '探索 Docker Hub',
+                    'Start with Docker Desktop': '从 Docker Desktop 开始',
+                    'Explore Docker Scout': '探索 Docker Scout',
+                    'Check out Testcontainers': '了解 Testcontainers',
+                    'Why use Docker?': '为什么使用 Docker？',
+                    'Read more customer stories': '阅读更多客户故事',
+
+                    // 容器和新手指南
+                    'Container development': '容器开发',
+                    'New to containers?': '容器新手？',
+                    'We got you covered! Get started with the basics with our getting started guide.': '我们为您提供了帮助！通过我们的入门指南了解基础知识。',
+                    'Read the container guide': '阅读容器指南',
+
+                    // 社区连接
+                    'Connect': '连接',
+                    'Meet the community': '认识社区',
+                    'Connect with us': '与我们联系',
+                    'Join our open source program': '加入我们的开源计划',
+                    'Our Docker-Sponsored Open Source program is ideal for developers working on non-commercial projects.': '我们的 Docker 赞助开源计划非常适合从事非商业项目的开发者。',
+                    'Apply today': '立即申请',
+                    'Connect with Docker experts': '与 Docker 专家联系',
+                    'Find and engage with our seasoned Docker Captains!': '寻找并与我们经验丰富的 Docker 船长互动！',
+                    'Find your Captain': '找到您的船长',
+                    'Develop from code to cloud with partners that you trust': '与您信任的合作伙伴一起从代码到云进行开发',
+                    'Our trusted partners': '我们值得信赖的合作伙伴',
+
+                    // 合作伙伴描述
+                    'Simplify the development of your multi-container applications from Docker CLI to Amazon ECS on AWS Fargate.': '简化从 Docker CLI 到 AWS Fargate 上的 Amazon ECS 的多容器应用程序开发。',
+                    'Seamlessly bring container applications from your local machine and run them in Azure Container Instances.': '无缝地将容器应用程序从您的本地机器带到 Azure 容器实例中运行。',
+                    'Easily distribute and share Docker images with the JFrog Artifactory image repository and integrate all of your development tools.': '通过 JFrog Artifactory 镜像仓库轻松分发和分享 Docker 镜像，并集成您所有的开发工具。',
+                    'Integrate with your favorite tools and images': '与您喜爱的工具和镜像集成',
+
+                    // 入门指南
+                    'How to get started': '如何开始',
+                    'Your path to accelerated application development starts here.': '您加速应用程序开发之路从这里开始。',
+                    'Learn how to install Docker for Mac, Windows, or Linux and explore our developer tools.': '了解如何为 Mac、Windows 或 Linux 安装 Docker 并探索我们的开发者工具。',
+                    'Containerize your first app': '容器化您的第一个应用程序',
+                    'Develop a solid understanding of the Docker basics with our step-by-step developer guide.': '通过我们的分步开发者指南深入了解 Docker 基础知识。',
+                    'Publish your image on Docker Hub': '在 Docker Hub 上发布您的镜像',
+                    'Share your application with the world (or other developers on your team).': '与全世界（或团队中的其他开发者）分享您的应用程序。',
+
+                    // 订阅和定价
+                    'Choose a subscription that\'s right for you': '选择适合您的订阅',
+                    'Find your perfect balance of collaboration, security, and support with a Docker subscription.': '通过 Docker 订阅找到协作、安全和支持的完美平衡。',
+                    'Trusted Open Source Content': '受信任的开源内容',
+                    'Personal': '个人版',
+                    'Premium Support and TAM': '高级支持和 TAM',
+
+                    // 页脚其他链接
+                    'Docker System Status': 'Docker 系统状态',
+                    'Swag Store': '周边商店',
+                    'Trademark Guidelines': '商标指南',
+                    'Languages': '语言',
                 },
-                regexp: [],
-                fragments: {}
+                regexp: [
+                    // 数字统计处理
+                    [/(\d+(?:,\d{3})*(?:\.\d+)?)\s*M\+?\s*monthly developers/i, '$1M+ 月活跃开发者'],
+                    [/(\d+(?:,\d{3})*(?:\.\d+)?)\s*M\+?\s*applications/i, '$1M+ 应用程序'],
+                    [/(\d+(?:,\d{3})*(?:\.\d+)?)\s*B\+?\s*monthly image pulls/i, '$1B+ 月镜像拉取量'],
+                    [/(\d+(?:,\d{3})*(?:\.\d+)?)\s*M\+?\s*developers/i, '$1M+ 开发者'],
+                    [/(\d+(?:,\d{3})*(?:\.\d+)?)\s*B\+?\s*image pulls/i, '$1B+ 镜像拉取量'],
+                ],
+                fragments: {
+                    'without tedious environment configuration or management': '无需繁琐的环境配置或管理',
+                    'Create multiple containers using': '使用',
+                    'without the hassle of local build constraints': '创建多个容器，无需担心本地构建限制',
+                    'seamlessly integrates with your development tools': '与您的开发工具无缝集成',
+                    'fast-tracks build times': '加快构建时间',
+                    'resulting in an enhanced workflow without disruption': '在不中断的情况下增强工作流程',
+                    'Ensure consistent application performance across any environment': '确保应用程序在任何环境中的一致性能',
+                    'Access a vast repository of trusted content': '访问大量可信内容',
+                    'simplifies the management and distribution of container applications': '简化了容器应用程序的管理和分发',
+                    'robust image access management': '强大的镜像访问管理',
+                    'ensuring best practices and peace of mind': '确保最佳实践和安心使用',
+                    'simplifies and accelerates the development': '简化并加速了开发',
+                    'Gain speed through streamlined': '通过简化的',
+                    'throughout the development lifecycle': '在整个开发生命周期中',
+                    'supports a wide range of programming languages': '支持广泛的编程语言',
+                    'integrates seamlessly with various developer tools': '与各种开发者工具无缝集成',
+                    'pre-configured templates': '预配置模板',
+                    'supports both individual developers and organizations': '支持个人开发者和组织',
+                    'offering a secure and flexible environment': '提供安全灵活的环境',
+                    'designed to provide actionable insights': '旨在提供可操作的洞察',
+                    'helps teams evaluate': '帮助团队评估',
+                    'ensuring a robust security posture': '确保强大的安全态势',
+                    'helps you understand and manage': '帮助您理解和管理',
+                    'offering suggestions for remediation': '提供修复建议',
+                    'before they impact production': '在影响生产之前',
+                    'Eliminate the need for mocks': '消除对模拟的需求',
+                    'will be created and deleted as needed': '将根据需要创建和删除',
+                    'provide lightweight, throwaway instances': '提供轻量级、一次性的实例',
+                    'for accurate, reliable testing': '以实现准确可靠的测试',
+                    'Enjoy a clean, consistent testing environment': '享受干净、一致的测试环境',
+                    'with minimal setup': '只需最少的设置',
+
+                    // 新增片段 - Docker for AI 和社区
+                    'Docker provides a suite of development tools': 'Docker 提供了一套开发工具',
+                    'services, trusted content, and automations': '服务、受信任的内容和自动化',
+                    'We got you covered': '我们为您提供了帮助',
+                    'Get started with the basics': '从基础知识开始',
+                    'with our getting started guide': '通过我们的入门指南',
+                    'Find and engage with our seasoned': '寻找并与我们经验丰富的',
+                    'ideal for developers working on non-commercial projects': '非常适合从事非商业项目的开发者',
+
+                    // 合作伙伴和集成
+                    'Simplify the development of your multi-container applications': '简化您的多容器应用程序开发',
+                    'from Docker CLI to': '从 Docker CLI 到',
+                    'Seamlessly bring container applications': '无缝地将容器应用程序',
+                    'from your local machine and run them in': '从您的本地机器带到',
+                    'Easily distribute and share Docker images': '轻松分发和分享 Docker 镜像',
+                    'with the JFrog Artifactory image repository': '通过 JFrog Artifactory 镜像仓库',
+                    'and integrate all of your development tools': '并集成您所有的开发工具',
+
+                    // 入门和指南
+                    'Your path to accelerated application development': '您加速应用程序开发之路',
+                    'starts here': '从这里开始',
+                    'Learn how to install Docker for': '了解如何为',
+                    'and explore our developer tools': '安装 Docker 并探索我们的开发者工具',
+                    'Develop a solid understanding of the Docker basics': '深入了解 Docker 基础知识',
+                    'with our step-by-step developer guide': '通过我们的分步开发者指南',
+                    'Share your application with the world': '与全世界分享您的应用程序',
+                    'or other developers on your team': '或团队中的其他开发者',
+
+                    // 订阅和功能
+                    'Find your perfect balance of collaboration': '找到协作的完美平衡',
+                    'security, and support': '安全和支持',
+                    'with a Docker subscription': '通过 Docker 订阅',
+                }
             },
 
             // ========================================
@@ -1058,8 +1424,6 @@
                     'No': '不是',
                     'By': '由',
                     'Filter by': '筛选方式',
-
-
                     'Sort by': '排序方式',
                     'Newest': '最新',
                     'Oldest': '最旧',
@@ -1067,6 +1431,35 @@
                     'Last pulled': '最后拉取',
                     'Status': '状态',
                     'Compressed size': '压缩大小',
+                    'Apply': '应用',
+                    'Consent': '同意',
+                    'label': '标签',
+                    'checkbox label': '复选框标签',
+
+                    // ========== 隐私和 Cookie 相关 ==========
+                    '© 2025 Docker Inc. All rights reserved': '© 2025 Docker 公司。版权所有',
+                    'reCAPTCHA': 'reCAPTCHA',
+                    'Preference center': '偏好设置中心',
+                    'Privacy Preference Center': '隐私偏好设置中心',
+                    'Company Logo': '公司徽标',
+                    'More information about your privacy, opens in a new tab': '有关您隐私的更多信息，在新标签页中打开',
+                    'More information': '更多信息',
+                    'Allow All': '允许全部',
+                    'Manage Consent Preferences': '管理同意偏好',
+                    'Functional Cookies': '功能性 Cookie',
+                    'Strictly Necessary Cookies': '严格必要的 Cookie',
+                    'Always Active': '始终启用',
+                    'Performance Cookies': '性能 Cookie',
+                    'Targeting Cookies': '定向 Cookie',
+                    'Back Button': '返回按钮',
+                    'Cookie List': 'Cookie 列表',
+                    'Search…': '搜索…',
+                    'Search Icon': '搜索图标',
+                    'Filter Icon': '筛选图标',
+                    'Leg.Interest': '合法权益',
+                    'Reject All': '拒绝全部',
+                    'Confirm My Choices': '确认我的选择',
+                    'onetrust-text-resize': 'onetrust-文本-调整大小',
                 },
 
                 regexp: [
@@ -1133,6 +1526,41 @@
                     'Run integration tests with real dependencies.': '使用真实依赖项运行集成测试。',
                     'Docker, Inc. All rights reserved.': 'Docker 公司。版权所有。',
                     'Repository': '仓库',
+
+                    // Cookie 和隐私相关片段
+                    'These cookies allow us to count visits and traffic sources': '这些 Cookie 允许我们统计访问量和流量来源',
+                    'so we can measure and improve the performance of our site': '以便我们衡量和改进网站性能',
+                    'They help us to know which pages are the most and least popular': '它们帮助我们了解哪些页面最受欢迎和最不受欢迎',
+                    'and see how visitors move around the site': '并查看访问者如何浏览网站',
+                    'All information these cookies collect is aggregated': '这些 Cookie 收集的所有信息都是汇总的',
+                    'and therefore anonymous': '因此是匿名的',
+                    'If you do not allow these cookies': '如果您不允许这些 Cookie',
+                    'we will not know when you have visited our site': '我们将不知道您何时访问了我们的网站',
+                    'and will not be able to monitor its performance': '并且无法监控其性能',
+                    'These cookies are necessary for the website to function': '这些 Cookie 是网站正常运行所必需的',
+                    'and cannot be switched off in our systems': '并且无法在我们的系统中关闭',
+                    'They are usually only set in response to actions made by you': '它们通常仅在响应您的操作时设置',
+                    'which amount to a request for services': '这相当于请求服务',
+                    'such as setting your privacy preferences': '例如设置您的隐私偏好',
+                    'logging in or filling in forms': '登录或填写表单',
+                    'You can set your browser to block or alert you about these cookies': '您可以将浏览器设置为阻止或提醒您这些 Cookie',
+                    'but some parts of the site will not then work': '但网站的某些部分将无法正常工作',
+                    'These cookies do not store any personally identifiable information': '这些 Cookie 不存储任何个人身份信息',
+                    'These cookies enable the website to provide enhanced functionality and personalisation': '这些 Cookie 使网站能够提供增强的功能和个性化',
+                    'They may be set by us or by third party providers': '它们可能由我们或第三方提供商设置',
+                    'whose services we have added to our pages': '我们已将其服务添加到我们的页面中',
+                    'If you do not allow these cookies then some or all of these services may not function properly': '如果您不允许这些 Cookie，则某些或所有这些服务可能无法正常运行',
+                    'These cookies may be set through our site by our advertising partners': '这些 Cookie 可能由我们的广告合作伙伴通过我们的网站设置',
+                    'They may be used by those companies to build a profile of your interests': '这些公司可能会使用它们来建立您的兴趣档案',
+                    'and show you relevant adverts on other sites': '并在其他网站上向您显示相关广告',
+                    'They do not store directly personal information': '它们不直接存储个人信息',
+                    'but are based on uniquely identifying your browser and internet device': '但基于唯一识别您的浏览器和互联网设备',
+                    'If you do not allow these cookies': '如果您不允许这些 Cookie',
+                    'you will experience less targeted advertising': '您将体验到较少的定向广告',
+                    'Powered by OneTrust Opens in a new Tab': '由 OneTrust 提供，在新标签页中打开',
+                    'Trusted by developers. Chosen by Fortune 100 companies.': '受开发者信赖。被财富 100 强企业选择。',
+                    'Stop by any of the hundreds of meetups around the world': '参加世界各地数百场聚会中的任何一场',
+                    'for in-person events': '进行面对面交流',
 
                     // 项目描述片段（保留项目名）
                     'The official': '官方的',
