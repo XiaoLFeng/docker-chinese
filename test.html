@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker Hub Container Image Library | App Containerization</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { background: #0db7ed; color: white; padding: 1rem; }
+        .nav { background: #f8f9fa; padding: 1rem; }
+        .nav a { margin-right: 1rem; text-decoration: none; color: #333; }
+        .content { margin: 2rem 0; }
+        .card { border: 1px solid #ddd; margin: 1rem 0; padding: 1rem; }
+        .btn { background: #0db7ed; color: white; padding: 0.5rem 1rem; border: none; cursor: pointer; }
+        input { padding: 0.5rem; margin: 0.5rem 0; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Welcome to Docker Hub</h1>
+        <p>The world's leading service for finding and sharing container images.</p>
+    </header>
+
+    <nav class="nav">
+        <a href="/explore">Explore repositories</a>
+        <a href="/pricing">Pricing</a>
+        <a href="/docs">Docs</a>
+        <a href="/support">Support</a>
+        <a href="/login">Sign In</a>
+        <a href="/signup">Sign Up</a>
+    </nav>
+
+    <div class="content">
+        <input type="search" placeholder="Search for images and repositories" style="width: 300px;">
+
+        <div class="card">
+            <h2>Popular repositories</h2>
+            <div>
+                <h3>nginx</h3>
+                <p>Official build of Nginx.</p>
+                <p>Download count: 1B+ | Stars: 15k+</p>
+                <button class="btn">Pull this image</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Official images</h2>
+            <div>
+                <h3>ubuntu</h3>
+                <p>Ubuntu is a Debian-based Linux operating system.</p>
+                <p>Size: 78MB | Pull: docker pull ubuntu</p>
+                <button class="btn">Copy pull command</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Docker commands</h3>
+            <p><strong>Run this container:</strong></p>
+            <code>docker run -d -p 80:80 nginx</code>
+            <p><strong>Container information:</strong></p>
+            <ul>
+                <li>Image ID: sha256:1234567890abcdef</li>
+                <li>Created: 2 weeks ago</li>
+                <li>Size: 142MB</li>
+                <li>OS/ARCH: linux/amd64</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 模拟页面加载完成后的翻译
+        console.log('页面加载完成，等待翻译...');
+
+        // 模拟 I18N 词库（用于测试）
+        window.I18N = {
+            zh: {
+                conf: {
+                    reIgnoreId: /^$/,
+                    reIgnoreClass: /(^|\s)(ace_editor|MathJax|CodeMirror)(\s|$)/,
+                    reIgnoreTag: ['SCRIPT', 'STYLE'],
+                    reIgnoreItemprop: /^$/,
+                },
+                public: {
+                    static: {
+                        'Search': '搜索',
+                        'Pull': '拉取',
+                        'Push': '推送',
+                        'Build': '构建',
+                        'Run': '运行',
+                        'Container': '容器',
+                        'Image': '镜像',
+                        'Repository': '仓库',
+                        'Tag': '标签',
+                        'Size': '大小',
+                        'Created': '创建时间',
+                        'Login': '登录',
+                        'Sign In': '登录',
+                        'Sign Up': '注册',
+                        'Download': '下载',
+                        'Copy': '复制',
+                        'View': '查看',
+                        'More': '更多',
+                    },
+                    regexp: [
+                        [/(\d+)B\+/, '$1B+'],
+                        [/(\d+)k\+/, '$1k+'],
+                        [/(\d+)\s*weeks? ago/, '$1周前'],
+                        [/(\d+)\s*days? ago/, '$1天前'],
+                    ],
+                    selector: []
+                },
+                dockerhub_home: {
+                    static: {
+                        'Welcome to Docker Hub': '欢迎使用 Docker Hub',
+                        'Search for images and repositories': '搜索镜像和仓库',
+                        'Popular repositories': '热门仓库',
+                        'Official images': '官方镜像',
+                        'Sign In': '登录',
+                        'Sign Up': '注册',
+                    },
+                    regexp: [],
+                    selector: []
+                },
+                title: {
+                    static: {
+                        'Docker Hub Container Image Library | App Containerization': 'Docker Hub 容器镜像库 | 应用容器化',
+                    },
+                    regexp: []
+                }
+            }
+        };
+
+        // 模拟翻译功能
+        function translateText(text) {
+            const dict = window.I18N.zh.public.static;
+            return dict[text] || text;
+        }
+
+        // 简单的翻译测试
+        setTimeout(() => {
+            document.title = translateText('Docker Hub Container Image Library | App Containerization');
+            document.querySelectorAll('h1, h2, h3, p, a, button, input').forEach(el => {
+                if (el.textContent.trim()) {
+                    el.textContent = translateText(el.textContent.trim());
+                }
+            });
+            document.querySelectorAll('input[placeholder]').forEach(el => {
+                el.placeholder = translateText(el.placeholder);
+            });
+            console.log('翻译完成！');
+        }, 1000);
+    </script>
+</body>
+</html>
