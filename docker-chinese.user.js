@@ -18,6 +18,7 @@
 // @grant        GM_notification
 // @grant        GM_unregisterMenuCommand
 // @supportURL   https://github.com/XiaoLFeng/docker-chinese/issues
+// @downloadURL  https://raw.githubusercontent.com/XiaoLFeng/docker-chinese/master/docker-chinese.user.js
 // @updateURL    https://raw.githubusercontent.com/XiaoLFeng/docker-chinese/master/docker-chinese.user.js
 // @license      MIT
 // ==/UserScript==
@@ -897,12 +898,6 @@
      * 监听鼠标交互，按需翻译
      */
     function watchMouseInteraction() {
-        // 检查是否启用鼠标交互
-        if (!GM_getValue("enable_MouseInteraction", 1)) {
-            console.log('[Docker 中文化] 鼠标交互监听已禁用');
-            return;
-        }
-
         if (!document.body) return;
 
         // 处理鼠标交互事件
@@ -944,12 +939,9 @@
     function registerMenuCommand() {
         if (typeof GM_registerMenuCommand !== 'function') return;
 
-        let regexpMenuId;
-        let mouseMenuId;
+        let menuId;
         let regexpEnabled = enable_RegExp;
-        let mouseEnabled = GM_getValue("enable_MouseInteraction", 1);
 
-        // 正则功能开关
         const toggleRegExp = () => {
             regexpEnabled = !regexpEnabled;
             GM_setValue("enable_RegExp", regexpEnabled);
@@ -960,51 +952,18 @@
 
             if (regexpEnabled) location.reload();
 
-            if (typeof GM_unregisterMenuCommand === 'function' && regexpMenuId) {
-                GM_unregisterMenuCommand(regexpMenuId);
+            if (typeof GM_unregisterMenuCommand === 'function' && menuId) {
+                GM_unregisterMenuCommand(menuId);
             }
-            regexpMenuId = GM_registerMenuCommand(
+            menuId = GM_registerMenuCommand(
                 `${regexpEnabled ? '关闭' : '开启'}正则功能`,
                 toggleRegExp
             );
         };
 
-        // 鼠标监听开关
-        const toggleMouseInteraction = () => {
-            mouseEnabled = !mouseEnabled;
-            GM_setValue("enable_MouseInteraction", mouseEnabled);
-
-            if (typeof GM_notification === 'function') {
-                GM_notification({
-                    text: `已${mouseEnabled ? '开启' : '关闭'}鼠标监听\n${mouseEnabled ? '将在页面刷新后生效' : '需要刷新页面以完全停止监听'}`,
-                    title: 'Docker 中文化',
-                    timeout: 3000
-                });
-            }
-
-            // 提示需要刷新
-            if (confirm(`已${mouseEnabled ? '开启' : '关闭'}鼠标监听功能\n是否立即刷新页面使设置生效？`)) {
-                location.reload();
-            }
-
-            if (typeof GM_unregisterMenuCommand === 'function' && mouseMenuId) {
-                GM_unregisterMenuCommand(mouseMenuId);
-            }
-            mouseMenuId = GM_registerMenuCommand(
-                `${mouseEnabled ? '关闭' : '开启'}鼠标监听`,
-                toggleMouseInteraction
-            );
-        };
-
-        // 注册菜单命令
-        regexpMenuId = GM_registerMenuCommand(
+        menuId = GM_registerMenuCommand(
             `${regexpEnabled ? '关闭' : '开启'}正则功能`,
             toggleRegExp
-        );
-
-        mouseMenuId = GM_registerMenuCommand(
-            `${mouseEnabled ? '关闭' : '开启'}鼠标监听`,
-            toggleMouseInteraction
         );
     }
 
